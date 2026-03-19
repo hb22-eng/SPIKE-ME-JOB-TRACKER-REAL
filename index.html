@@ -357,10 +357,7 @@ tr:hover td{background:rgba(255,255,255,.018)}
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         Monthly Calendar
       </div>
-      <div class="ni" id="ni-bnb" onclick="showView('bnb',this)">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-        BNB Team
-      </div>
+
     </div>
     <div class="nav-grp">
       <div class="nav-grp-label">Engineers</div>
@@ -568,53 +565,18 @@ tr:hover td{background:rgba(255,255,255,.018)}
 <script>
 // ════ DATA ════════════════════════════════════════════════════════════════
 const ENGINEERS = [
-  {id:'AM', name:'A. Martinez', color:'#29ABE2', bg:'rgba(41,171,226,.15)', role:'Sr. Engineer'},
-  {id:'JP', name:'J. Patel',    color:'#22d47a', bg:'rgba(34,212,122,.15)', role:'Engineer'},
-  {id:'SK', name:'S. Kim',      color:'#f5a623', bg:'rgba(245,166,35,.15)', role:'Sr. Engineer'},
-  {id:'RT', name:'R. Thompson', color:'#14c4b2', bg:'rgba(20,196,178,.15)', role:'Engineer'},
-  {id:'LG', name:'L. Garcia',   color:'#f97244', bg:'rgba(249,114,68,.15)', role:'Jr. Engineer'},
-  {id:'DN', name:'D. Nguyen',   color:'#f55353', bg:'rgba(245,83,83,.15)',  role:'Engineer'},
-  {id:'CB', name:'C. Brooks',   color:'#e855a0', bg:'rgba(232,85,160,.15)', role:'Sr. Engineer'},
-  {id:'TW', name:'T. Wallace',  color:'#a96df7', bg:'rgba(169,109,247,.15)',role:'Engineer'},
-  {id:'HR', name:'H. Reyes',    color:'#29ABE2', bg:'rgba(41,171,226,.15)', role:'Jr. Engineer'},
-  {id:'BN', name:'BNB Team',    color:'#a96df7', bg:'rgba(169,109,247,.15)',role:'External', isBnb:true},
+  {id:'BH', name:'Bryan Haro',       color:'#29ABE2', bg:'rgba(41,171,226,.15)', role:'Engineer'},
+  {id:'EO', name:'Edwin Ojeda',      color:'#22d47a', bg:'rgba(34,212,122,.15)', role:'Engineer'},
+  {id:'MG', name:'Mario Galdamez',   color:'#f5a623', bg:'rgba(245,166,35,.15)', role:'Engineer'},
+  {id:'CK', name:'Corey Kidd',       color:'#f55353', bg:'rgba(245,83,83,.15)',  role:'Engineer'},
+  {id:'JJ', name:'Jose Jasso',       color:'#a96df7', bg:'rgba(169,109,247,.15)',role:'Engineer'},
+  {id:'MP', name:'Masoom Patel',     color:'#14c4b2', bg:'rgba(20,196,178,.15)', role:'Engineer'},
+  {id:'OP', name:'Osvaldo Perez',    color:'#f97244', bg:'rgba(249,114,68,.15)', role:'Engineer'},
+  {id:'EL', name:'Erik Leal',        color:'#e855a0', bg:'rgba(232,85,160,.15)', role:'Engineer'},
+  {id:'MW', name:'Micaiah Williams', color:'#c8f026', bg:'rgba(200,240,38,.15)',  role:'Engineer'},
 ];
 
-let PROJECTS = [
-  {id:'P-001',name:'Bay 3 Switchrack',       engineer:'A. Martinez',type:'Switchrack', voltage:'15kV',          pm:'C. Davis', sales:'M. Wilson',status:'In Progress',start:'2025-01-10',end:'2025-04-15',ms:{design:true, ifa:true, ifc:false,adj:false,idr:false,live:false}},
-  {id:'P-002',name:'Unit Sub 4 Switchgear',  engineer:'A. Martinez',type:'Switchgear', voltage:'38kV',          pm:'T. Baker', sales:'K. Lee',   status:'In Progress',start:'2025-02-01',end:'2025-06-30',ms:{design:true, ifa:false,ifc:false,adj:false,idr:false,live:false}},
-  {id:'P-003',name:'Injection Pump Rack A',  engineer:'A. Martinez',type:'Switchrack', voltage:'15kV',          pm:'C. Davis', sales:'A. Perez', status:'In Progress',start:'2025-03-10',end:'2025-06-01',ms:{design:false,ifa:false,ifc:false,adj:false,idr:false,live:false}},
-  {id:'P-004',name:'Transformer TX-14',      engineer:'A. Martinez',type:'Transformer',voltage:'38kV',          pm:'R. Evans', sales:'M. Wilson',status:'Complete',   start:'2024-11-01',end:'2025-02-01',ms:{design:true, ifa:true, ifc:true, adj:true, idr:true, live:true }},
-  {id:'P-005',name:'Motor Control Ctr A',    engineer:'J. Patel',   type:'MCC',        voltage:'Low Voltage',   pm:'C. Davis', sales:'M. Wilson',status:'In Progress',start:'2025-01-20',end:'2025-05-10',ms:{design:true, ifa:true, ifc:true, adj:false,idr:true, live:false}},
-  {id:'P-006',name:'Compressor Rack B2',     engineer:'J. Patel',   type:'Switchrack', voltage:'15kV',          pm:'R. Evans', sales:'A. Perez', status:'Complete',   start:'2024-11-01',end:'2025-02-28',ms:{design:true, ifa:true, ifc:true, adj:true, idr:true, live:true }},
-  {id:'P-007',name:'Bus Duct Run East',      engineer:'J. Patel',   type:'Bus Duct',   voltage:'Medium Voltage',pm:'T. Baker', sales:'K. Lee',   status:'In Progress',start:'2025-02-15',end:'2025-05-30',ms:{design:true, ifa:false,ifc:false,adj:false,idr:false,live:false}},
-  {id:'P-008',name:'Plant 2 MV Panel',       engineer:'S. Kim',     type:'Panel',      voltage:'Medium Voltage',pm:'T. Baker', sales:'K. Lee',   status:'In Progress',start:'2025-02-15',end:'2025-07-01',ms:{design:true, ifa:true, ifc:false,adj:false,idr:false,live:false}},
-  {id:'P-009',name:'Transformer TX-12',      engineer:'S. Kim',     type:'Transformer',voltage:'38kV',          pm:'C. Davis', sales:'M. Wilson',status:'In Progress',start:'2025-03-01',end:'2025-05-15',ms:{design:false,ifa:false,ifc:false,adj:false,idr:false,live:false}},
-  {id:'P-010',name:'Load Center LC-7',       engineer:'S. Kim',     type:'Load Center',voltage:'Low Voltage',   pm:'R. Evans', sales:'A. Perez', status:'In Progress',start:'2025-01-15',end:'2025-04-01',ms:{design:true, ifa:true, ifc:true, adj:true, idr:false,live:false}},
-  {id:'P-011',name:'MCC South Wing',         engineer:'S. Kim',     type:'MCC',        voltage:'Low Voltage',   pm:'T. Baker', sales:'K. Lee',   status:'On Hold',    start:'2025-02-01',end:'2025-08-01',ms:{design:true, ifa:false,ifc:false,adj:false,idr:false,live:false}},
-  {id:'P-012',name:'Distribution Rack DR5',  engineer:'R. Thompson',type:'Switchrack', voltage:'15kV',          pm:'R. Evans', sales:'A. Perez', status:'In Progress',start:'2025-01-05',end:'2025-04-20',ms:{design:true, ifa:true, ifc:true, adj:true, idr:false,live:false}},
-  {id:'P-013',name:'Wellhead Control Panel', engineer:'R. Thompson',type:'Panel',      voltage:'Low Voltage',   pm:'T. Baker', sales:'K. Lee',   status:'In Progress',start:'2025-02-10',end:'2025-05-30',ms:{design:true, ifa:false,ifc:false,adj:false,idr:false,live:false}},
-  {id:'P-014',name:'38kV Switchgear Unit 2', engineer:'R. Thompson',type:'Switchgear', voltage:'38kV',          pm:'C. Davis', sales:'M. Wilson',status:'In Progress',start:'2025-03-01',end:'2025-07-15',ms:{design:false,ifa:false,ifc:false,adj:false,idr:false,live:false}},
-  {id:'P-015',name:'Compressor MCC South',   engineer:'L. Garcia',  type:'MCC',        voltage:'Low Voltage',   pm:'C. Davis', sales:'M. Wilson',status:'In Progress',start:'2025-02-20',end:'2025-06-10',ms:{design:true, ifa:false,ifc:false,adj:false,idr:false,live:false}},
-  {id:'P-016',name:'LV Panel Upgrade',       engineer:'L. Garcia',  type:'Panel',      voltage:'Low Voltage',   pm:'T. Baker', sales:'K. Lee',   status:'Complete',   start:'2024-12-01',end:'2025-03-01',ms:{design:true, ifa:true, ifc:true, adj:true, idr:true, live:true }},
-  {id:'P-017',name:'Bus Duct BD-2',          engineer:'L. Garcia',  type:'Bus Duct',   voltage:'Medium Voltage',pm:'R. Evans', sales:'A. Perez', status:'In Progress',start:'2025-03-15',end:'2025-07-01',ms:{design:false,ifa:false,ifc:false,adj:false,idr:false,live:false}},
-  {id:'P-018',name:'Skid Mounted Gear 7',    engineer:'D. Nguyen',  type:'Switchgear', voltage:'Medium Voltage',pm:'R. Evans', sales:'A. Perez', status:'On Hold',    start:'2025-01-15',end:'2025-08-01',ms:{design:true, ifa:false,ifc:false,adj:false,idr:false,live:false}},
-  {id:'P-019',name:'Transformer TX-09',      engineer:'D. Nguyen',  type:'Transformer',voltage:'15kV',          pm:'C. Davis', sales:'K. Lee',   status:'In Progress',start:'2025-02-01',end:'2025-05-01',ms:{design:true, ifa:true, ifc:false,adj:false,idr:false,live:false}},
-  {id:'P-020',name:'Load Center LC-3',       engineer:'D. Nguyen',  type:'Load Center',voltage:'Low Voltage',   pm:'T. Baker', sales:'M. Wilson',status:'Complete',   start:'2024-12-15',end:'2025-03-15',ms:{design:true, ifa:true, ifc:true, adj:true, idr:true, live:true }},
-  {id:'P-021',name:'Main Bus 15kV',          engineer:'C. Brooks',  type:'Switchrack', voltage:'15kV',          pm:'R. Evans', sales:'A. Perez', status:'In Progress',start:'2025-01-20',end:'2025-05-15',ms:{design:true, ifa:true, ifc:true, adj:false,idr:false,live:false}},
-  {id:'P-022',name:'MCC Unit 3 West',        engineer:'C. Brooks',  type:'MCC',        voltage:'Low Voltage',   pm:'C. Davis', sales:'M. Wilson',status:'In Progress',start:'2025-02-10',end:'2025-06-01',ms:{design:true, ifa:false,ifc:false,adj:false,idr:false,live:false}},
-  {id:'P-023',name:'38kV Gear Package C',    engineer:'C. Brooks',  type:'Switchgear', voltage:'38kV',          pm:'T. Baker', sales:'K. Lee',   status:'In Progress',start:'2025-03-01',end:'2025-08-01',ms:{design:false,ifa:false,ifc:false,adj:false,idr:false,live:false}},
-  {id:'P-024',name:'Pump Panel PP-5',        engineer:'C. Brooks',  type:'Panel',      voltage:'Low Voltage',   pm:'R. Evans', sales:'A. Perez', status:'Complete',   start:'2024-10-01',end:'2025-01-15',ms:{design:true, ifa:true, ifc:true, adj:true, idr:true, live:true }},
-  {id:'P-025',name:'Injection MV Rack',      engineer:'T. Wallace', type:'Switchrack', voltage:'Medium Voltage',pm:'C. Davis', sales:'M. Wilson',status:'In Progress',start:'2025-02-01',end:'2025-05-20',ms:{design:true, ifa:true, ifc:false,adj:false,idr:false,live:false}},
-  {id:'P-026',name:'Transformer Bank TB-4',  engineer:'T. Wallace', type:'Transformer',voltage:'38kV',          pm:'T. Baker', sales:'K. Lee',   status:'In Progress',start:'2025-03-10',end:'2025-07-01',ms:{design:false,ifa:false,ifc:false,adj:false,idr:false,live:false}},
-  {id:'P-027',name:'Bus Duct BD-5',          engineer:'T. Wallace', type:'Bus Duct',   voltage:'Medium Voltage',pm:'R. Evans', sales:'A. Perez', status:'Complete',   start:'2024-11-15',end:'2025-02-15',ms:{design:true, ifa:true, ifc:true, adj:true, idr:true, live:true }},
-  {id:'P-028',name:'Load Center LC-1',       engineer:'H. Reyes',   type:'Load Center',voltage:'Low Voltage',   pm:'C. Davis', sales:'M. Wilson',status:'In Progress',start:'2025-01-10',end:'2025-03-30',ms:{design:true, ifa:true, ifc:true, adj:false,idr:false,live:false}},
-  {id:'P-029',name:'Control Panel CP-8',     engineer:'H. Reyes',   type:'Panel',      voltage:'Low Voltage',   pm:'T. Baker', sales:'K. Lee',   status:'In Progress',start:'2025-02-20',end:'2025-05-01',ms:{design:true, ifa:false,ifc:false,adj:false,idr:false,live:false}},
-  {id:'P-030',name:'BNB Bay 7 Switchrack',   engineer:'BNB Team',   type:'Switchrack', voltage:'15kV',          pm:'T. Baker', sales:'K. Lee',   status:'In Progress',start:'2025-01-25',end:'2025-04-30',ms:{design:true, ifa:true, ifc:false,adj:false,idr:false,live:false}},
-  {id:'P-031',name:'BNB Pump Panel PP-3',    engineer:'BNB Team',   type:'Panel',      voltage:'Low Voltage',   pm:'C. Davis', sales:'M. Wilson',status:'In Progress',start:'2025-02-05',end:'2025-05-20',ms:{design:true, ifa:false,ifc:false,adj:false,idr:false,live:false}},
-  {id:'P-032',name:'BNB MV Distribution A',  engineer:'BNB Team',   type:'Switchgear', voltage:'Medium Voltage',pm:'R. Evans', sales:'A. Perez', status:'In Progress',start:'2025-03-01',end:'2025-07-15',ms:{design:false,ifa:false,ifc:false,adj:false,idr:false,live:false}},
-  {id:'P-033',name:'BNB MCC Remote',         engineer:'BNB Team',   type:'MCC',        voltage:'Low Voltage',   pm:'T. Baker', sales:'K. Lee',   status:'On Hold',    start:'2025-02-15',end:'2025-06-30',ms:{design:true, ifa:false,ifc:false,adj:false,idr:false,live:false}},
-];
+let PROJECTS = [];
 
 // ════ HELPERS ════════════════════════════════════════════════════════════
 function msPct(ms){const k=['design','ifa','ifc','adj','idr','live'];return Math.round(k.filter(x=>ms[x]).length/k.length*100)}
@@ -666,14 +628,14 @@ function renderDashboard(){
     <div class="kc" style="--kc:var(--am)"><div class="kc-lbl">Avg Cycle Time</div><div class="kc-val">8.5<span>wk</span></div><div class="kc-sub">Design → Live on floor</div></div>
     <div class="kc" style="--kc:var(--pu)"><div class="kc-lbl">BNB Projects</div><div class="kc-val">${bnb.length}</div><div class="kc-sub">External team</div></div>
     <div class="kc" style="--kc:var(--rd)"><div class="kc-lbl">IDR Pending</div><div class="kc-val">${idrPend.length}</div><div class="kc-sub">Needs review</div></div>
-    <div class="kc" style="--kc:var(--tl)"><div class="kc-lbl">Engineers Active</div><div class="kc-val">${ENGINEERS.filter(e=>!e.isBnb&&PROJECTS.some(p=>p.engineer===e.name&&p.status!=='Complete')).length}<span>/${ENGINEERS.filter(e=>!e.isBnb).length}</span></div><div class="kc-sub">Of total team</div></div>`;
+    <div class="kc" style="--kc:var(--tl)"><div class="kc-lbl">Engineers Active</div><div class="kc-val">${ENGINEERS.filter(e=>PROJECTS.some(p=>p.engineer===e.name&&p.status!=='Complete')).length}<span>/${ENGINEERS.length</span></div><div class="kc-sub">Of total team</div></div>`;
 
-  const nonBnb=ENGINEERS.filter(e=>!e.isBnb);
+  const nonBnb=ENGINEERS;
   const C='#29ABE2';
   destroyChart('cWorkload');
   charts.cWorkload=new Chart(document.getElementById('cWorkload'),{
     type:'bar',
-    data:{labels:nonBnb.map(e=>e.name.split('.')[1]?.trim()||e.name),
+    data:{labels:nonBnb.map(e=>e.name.split(' ')[0]),
       datasets:[{data:nonBnb.map(e=>PROJECTS.filter(p=>p.engineer===e.name&&p.status!=='Complete').length),backgroundColor:nonBnb.map(e=>e.color+'33'),borderColor:nonBnb.map(e=>e.color),borderWidth:1.5,borderRadius:2,borderSkipped:false}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
       scales:{y:{ticks:{color:'#444',font:{size:9}},grid:{color:'rgba(255,255,255,0.04)'},beginAtZero:true},x:{ticks:{color:'#444',font:{size:9}},grid:{display:false}}}}
@@ -726,7 +688,11 @@ function renderDashboard(){
   }).join('');
 
   const tbody=document.getElementById('dash-table');
-  tbody.innerHTML=PROJECTS.filter(p=>p.status!=='Complete').slice(0,15).map(p=>{
+  const activeProjList=PROJECTS.filter(p=>p.status!=='Complete').slice(0,15);
+  if(!activeProjList.length){tbody.innerHTML='<tr><td colspan="8" class="empty" style="padding:32px">⚡ No projects yet — click Add Project to get started</td></tr>';
+  // Still update charts with empty data
+  return;}
+  tbody.innerHTML=activeProjList.map(p=>{
     const e=getEng(p.engineer);const pct=msPct(p.ms);
     return `<tr>
       <td><div class="pname">${p.name}</div><div class="pid">${p.id}</div></td>
@@ -952,9 +918,9 @@ function renderKPI(){
   charts.cMonthly=new Chart(document.getElementById('cMonthly'),{type:'bar',data:{labels:['Oct','Nov','Dec','Jan','Feb','Mar'],datasets:[{label:'Completed',data:[2,3,4,3,2,1],backgroundColor:'rgba(41,171,226,.25)',borderColor:'#29ABE2',borderWidth:1.5,borderRadius:2,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{color:'#444',font:{size:9}},grid:{color:'rgba(255,255,255,.04)'},beginAtZero:true},x:{ticks:{color:'#444',font:{size:9}},grid:{display:false}}}}});
   destroyChart('cCycle');
   charts.cCycle=new Chart(document.getElementById('cCycle'),{type:'bar',data:{labels:['Switchrack','Switchgear','MCC','Transformer','Panel','Bus Duct','Load Ctr'],datasets:[{label:'Design',data:[3.2,4.1,5.0,2.5,1.8,2.2,1.5],backgroundColor:'rgba(41,171,226,.25)',borderColor:'#29ABE2',borderWidth:1.5,borderRadius:2,borderSkipped:false},{label:'Total',data:[8.5,11.2,14.0,6.8,4.2,5.5,3.8],backgroundColor:'rgba(34,212,122,.15)',borderColor:'#22d47a',borderWidth:1.5,borderRadius:2,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#666',font:{size:9},boxWidth:8}}},scales:{y:{ticks:{color:'#444',font:{size:9},callback:v=>v+'w'},grid:{color:'rgba(255,255,255,.04)'},beginAtZero:true},x:{ticks:{color:'#444',font:{size:8.5}},grid:{display:false}}}}});
-  const nonBnb=ENGINEERS.filter(e=>!e.isBnb);
+  const nonBnb=ENGINEERS;
   destroyChart('cThroughput');
-  charts.cThroughput=new Chart(document.getElementById('cThroughput'),{type:'bar',data:{labels:nonBnb.map(e=>e.name.split('.')[1]?.trim()||e.name),datasets:[{data:nonBnb.map(e=>PROJECTS.filter(p=>p.engineer===e.name&&p.status==='Complete').length),backgroundColor:nonBnb.map(e=>e.color+'33'),borderColor:nonBnb.map(e=>e.color),borderWidth:1.5,borderRadius:2,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{color:'#444',font:{size:9}},grid:{color:'rgba(255,255,255,.04)'},beginAtZero:true},x:{ticks:{color:'#444',font:{size:9}},grid:{display:false}}}}});
+  charts.cThroughput=new Chart(document.getElementById('cThroughput'),{type:'bar',data:{labels:nonBnb.map(e=>e.name.split(' ')[0]),datasets:[{data:nonBnb.map(e=>PROJECTS.filter(p=>p.engineer===e.name&&p.status==='Complete').length),backgroundColor:nonBnb.map(e=>e.color+'33'),borderColor:nonBnb.map(e=>e.color),borderWidth:1.5,borderRadius:2,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{color:'#444',font:{size:9}},grid:{color:'rgba(255,255,255,.04)'},beginAtZero:true},x:{ticks:{color:'#444',font:{size:9}},grid:{display:false}}}}});
   const active=PROJECTS.filter(p=>p.status!=='Complete');
   const msKeys=['design','ifa','ifc','adj','idr','live'],msLabels=['Design','IFA','IFC','ADJ','IDR','Live'];
   const msVals=msKeys.map(k=>Math.round(active.filter(p=>p.ms[k]).length/active.length*100));
