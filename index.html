@@ -1041,19 +1041,32 @@ function exportCSV(){
   const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='spike-projects-'+new Date().toISOString().split('T')[0]+'.csv';a.click();
 }
 
-// ════ PASSWORD CONFIG ═════════════════════════════════════════════════════
-// 🔧 CHANGE THIS to your team password:
-const TEAM_PASSWORD = 'SPIKE2025';
-const SESSION_KEY = 'spike_auth';
+// ════ CONFIG — EDIT THESE TWO LINES ══════════════════════════════════════
+const TEAM_PASSWORD  = 'SPIKE2025';           // 🔧 change to your password
+const SUPABASE_URL   = 'YOUR_SUPABASE_URL';   // 🔧 paste from Supabase
+const SUPABASE_KEY   = 'YOUR_SUPABASE_ANON_KEY'; // 🔧 paste from Supabase
+// ═════════════════════════════════════════════════════════════════════════
 
+const SESSION_KEY = 'spike_auth';
+let sb = null; // Supabase client, set after password entry
+let realtimeCh = null;
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+// ── Password check ────────────────────────────────────────────────────────
 function checkPassword(){
-  const entered = document.getElementById('pw-input').value;
-  const err = document.getElementById('pw-error');
-  if(entered === TEAM_PASSWORD){
+  const entered=document.getElementById('pw-input').value;
+  const err=document.getElementById('pw-error');
+  if(entered===TEAM_PASSWORD){
     sessionStorage.setItem(SESSION_KEY,'1');
     document.getElementById('login-screen').style.display='none';
     document.getElementById('app-shell').style.display='flex';
     err.style.display='none';
+    initSupabaseAndLoad();
   } else {
     err.style.display='block';
     document.getElementById('pw-input').value='';
@@ -1065,41 +1078,152 @@ function checkPassword(){
 
 function doLogout(){
   sessionStorage.removeItem(SESSION_KEY);
+  if(realtimeCh&&sb) sb.removeChannel(realtimeCh);
   document.getElementById('app-shell').style.display='none';
   document.getElementById('login-screen').style.display='flex';
   document.getElementById('pw-input').value='';
 }
 
-function showToast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),3500);
+// ── Supabase init + load ──────────────────────────────────────────────────
+function loadScript(src){
+  return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});
 }
 
-function saveProject(){
-  const name=document.getElementById('f-name').value.trim(),engineer=document.getElementById('f-engineer').value,type=document.getElementById('f-type-m').value,voltage=document.getElementById('f-voltage').value;
+async function initSupabaseAndLoad(){
+  if(SUPABASE_URL==='YOUR_SUPABASE_URL'){
+    // Not configured yet — just run with local data
+    refreshAll();
+    return;
+  }
+  try {
+    await loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js');
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    await loadProjectsFromDB();
+    subscribeRealtime();
+  } catch(e){
+    console.error('Supabase error:', e);
+    refreshAll(); // fall back to local
+  }
+}
+
+async function loadProjectsFromDB(){
+  showAppLoading(true);
+  const {data,error} = await sb.from('projects').select('*').order('created_at',{ascending:false});
+  showAppLoading(false);
+  if(error){console.error(error);refreshAll();return;}
+  PROJECTS = data.map(r=>({
+    id:r.proj_id, name:r.name, desc:r.description||'',
+    engineer:r.engineer, type:r.type, voltage:r.voltage,
+    pm:r.pm, sales:r.sales, status:r.status,
+    start:r.start_date, end:r.end_date,
+    ms:{design:r.ms_design||false,ifa:r.ms_ifa||false,ifc:r.ms_ifc||false,adj:r.ms_adj||false,idr:r.ms_idr||false,live:r.ms_live||false},
+    _dbid:r.id
+  }));
+  refreshAll();
+}
+
+function subscribeRealtime(){
+  realtimeCh = sb.channel('projects-changes')
+    .on('postgres_changes',{event:'*',schema:'public',table:'projects'},()=>{
+      loadProjectsFromDB();
+      showToast('⚡ Updated by team member');
+    }).subscribe();
+}
+
+function showAppLoading(on){
+  document.getElementById('app-loading').style.display=on?'flex':'none';
+}
+
+function refreshAll(){
+  buildEngNav();renderDashboard();populateCalFilters();
+  document.getElementById('last-update').textContent=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+}
+
+// ── Save project ──────────────────────────────────────────────────────────
+async function saveProject(){
+  const name=document.getElementById('f-name').value.trim();
+  const engineer=document.getElementById('f-engineer').value;
+  const type=document.getElementById('f-type-m').value;
+  const voltage=document.getElementById('f-voltage').value;
   if(!name||!engineer||!type||!voltage){alert('Please fill in Name, Engineer, Type and Voltage');return;}
-  const ms={design:document.getElementById('mc-design').querySelector('input').checked,ifa:document.getElementById('mc-ifa').querySelector('input').checked,ifc:document.getElementById('mc-ifc').querySelector('input').checked,adj:document.getElementById('mc-adj').querySelector('input').checked,idr:document.getElementById('mc-idr').querySelector('input').checked,live:document.getElementById('mc-live').querySelector('input').checked};
-  const proj={id:document.getElementById('f-id').value||'P-'+Date.now(),name,desc:document.getElementById('f-desc').value,engineer,type,voltage,pm:document.getElementById('f-pm').value||'TBD',sales:document.getElementById('f-sales').value||'TBD',status:ms.live?'Complete':'In Progress',start:document.getElementById('f-start').value||null,end:document.getElementById('f-end').value||null,ms};
-  if(editingId){const idx=PROJECTS.findIndex(p=>p.id===editingId);if(idx>=0)PROJECTS[idx]={...PROJECTS[idx],...proj};}
-  else PROJECTS.push(proj);
-  closeModal();renderDashboard();
+  const ms={
+    design:document.getElementById('mc-design').querySelector('input').checked,
+    ifa:document.getElementById('mc-ifa').querySelector('input').checked,
+    ifc:document.getElementById('mc-ifc').querySelector('input').checked,
+    adj:document.getElementById('mc-adj').querySelector('input').checked,
+    idr:document.getElementById('mc-idr').querySelector('input').checked,
+    live:document.getElementById('mc-live').querySelector('input').checked
+  };
+  const proj={
+    id:document.getElementById('f-id').value||'P-'+Date.now(),
+    name, desc:document.getElementById('f-desc').value,
+    engineer, type, voltage,
+    pm:document.getElementById('f-pm').value||'TBD',
+    sales:document.getElementById('f-sales').value||'TBD',
+    status:ms.live?'Complete':'In Progress',
+    start:document.getElementById('f-start').value||null,
+    end:document.getElementById('f-end').value||null,
+    ms
+  };
+
+  // Save to Supabase if connected
+  if(sb){
+    const dbRow={
+      proj_id:proj.id, name:proj.name, description:proj.desc||'',
+      engineer:proj.engineer, type:proj.type, voltage:proj.voltage,
+      pm:proj.pm, sales:proj.sales, status:proj.status,
+      start_date:proj.start||null, end_date:proj.end||null,
+      ms_design:proj.ms.design, ms_ifa:proj.ms.ifa, ms_ifc:proj.ms.ifc,
+      ms_adj:proj.ms.adj, ms_idr:proj.ms.idr, ms_live:proj.ms.live
+    };
+    let error;
+    if(editingId){
+      const existing=PROJECTS.find(p=>p.id===editingId);
+      if(existing?._dbid)({error}=await sb.from('projects').update(dbRow).eq('id',existing._dbid));
+    } else {
+      ({error}=await sb.from('projects').insert([dbRow]));
+    }
+    if(error){alert('Save failed: '+error.message);return;}
+    showToast('⚡ Project saved');
+    closeModal();
+    // Realtime will trigger reload
+    return;
+  }
+
+  // No Supabase — save locally in memory
+  if(editingId){
+    const idx=PROJECTS.findIndex(p=>p.id===editingId);
+    if(idx>=0)PROJECTS[idx]={...PROJECTS[idx],...proj};
+  } else {
+    PROJECTS.push(proj);
+  }
+  closeModal();
+  refreshAll();
   const av2=document.querySelector('.view.active');
   if(av2?.id==='view-projects') renderProjects();
   if(av2?.id==='view-gantt') renderGantt();
-  if(av2?.id==='view-bnb') renderBNB();
-  showToast('⚡ Project saved');
+  showToast('⚡ Project saved (local only)');
 }
 
 // ════ INIT ════════════════════════════════════════════════════════════════
+// Add loading overlay to HTML dynamically
+document.body.insertAdjacentHTML('beforeend',`
+  <div id="app-loading" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:500;align-items:center;justify-content:center;flex-direction:column;gap:12px">
+    <div style="width:28px;height:28px;border:2px solid #222;border-top-color:#29ABE2;border-radius:50%;animation:spin .7s linear infinite"></div>
+    <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px">Loading projects…</div>
+  </div>
+  <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+`);
+
 if(sessionStorage.getItem(SESSION_KEY)==='1'){
   document.getElementById('app-shell').style.display='flex';
+  initSupabaseAndLoad();
 } else {
   document.getElementById('login-screen').style.display='flex';
   setTimeout(()=>document.getElementById('pw-input')?.focus(),100);
+  buildEngNav();renderDashboard();populateCalFilters();
+  document.getElementById('last-update').textContent=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
 }
-buildEngNav();renderDashboard();populateCalFilters();
-document.getElementById('last-update').textContent=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
 </script>
 </body>
 </html>
