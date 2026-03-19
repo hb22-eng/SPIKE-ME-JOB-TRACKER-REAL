@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPIKE — Engineering Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Barlow:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700;1,800;1,900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --spike:#29ABE2;
+  --spike2:#1a8bbf;
+  --spike-glow:rgba(41,171,226,0.2);
+  --spike-dim:rgba(41,171,226,0.08);
+  --bg:#000;
+  --s1:#0d0d0d;
+  --s2:#141414;
+  --s3:#1c1c1c;
+  --s4:#242424;
+  --b1:rgba(255,255,255,0.07);
+  --b2:rgba(255,255,255,0.13);
+  --b3:rgba(41,171,226,0.35);
+  --t1:#ffffff;
+  --t2:#888;
+  --t3:#444;
+  --acc:#29ABE2;
+  --acc2:#1a8bbf;
+  --gr:#22d47a;
+  --am:#f5a623;
+  --rd:#f55353;
+  --tl:#14c4b2;
+  --pu:#a96df7;
+  --co:#f97244;
+  --fh:'Barlow',sans-serif;
+  --fb:'Inter',sans-serif;
+  --fm:'DM Mono',monospace;
+  --r:6px;--rs:3px;--rl:10px;
+}
+body{background:var(--bg);color:var(--t1);font-family:var(--fb);font-size:14px;line-height:1.5;overflow-x:hidden}
+
+/* ── LAYOUT ── */
+.app{display:flex;min-height:100vh}
+.sidebar{width:232px;min-width:232px;background:var(--s1);border-right:1px solid var(--b1);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;z-index:20}
+
+/* SPIKE logo area */
+.logo{padding:0;border-bottom:1px solid var(--b1);background:var(--bg)}
+.logo-spike{display:flex;align-items:center;justify-content:center;padding:18px 20px 14px;gap:0}
+.logo-sp{font-family:var(--fh);font-size:28px;font-weight:900;font-style:italic;color:#fff;letter-spacing:-1px;line-height:1}
+.logo-bolt{display:flex;align-items:center;justify-content:center;margin:0 1px}
+.logo-ke{font-family:var(--fh);font-size:28px;font-weight:900;font-style:italic;color:#fff;letter-spacing:-1px;line-height:1}
+.logo-sub-row{display:flex;align-items:center;justify-content:center;gap:6px;padding:0 20px 14px}
+.logo-sub{font-size:9px;font-weight:700;color:var(--t3);letter-spacing:2.5px;text-transform:uppercase}
+.logo-sub-line{flex:1;height:1px;background:var(--b1)}
+
+nav{padding:12px 10px;flex:1}
+.nav-grp{margin-bottom:16px}
+.nav-grp-label{font-size:9px;font-weight:700;letter-spacing:1.8px;color:var(--t3);text-transform:uppercase;padding:0 8px 6px}
+.ni{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:var(--rs);cursor:pointer;color:var(--t2);font-size:12.5px;font-weight:400;transition:all .12s;margin-bottom:1px;border:1px solid transparent;user-select:none}
+.ni:hover{background:var(--s3);color:var(--t1)}
+.ni.active{background:var(--spike-dim);color:var(--spike);border-color:rgba(41,171,226,.18);font-weight:600}
+.ni svg{flex-shrink:0;opacity:.6}
+.ni.active svg{opacity:1}
+.sb-footer{padding:12px 16px;border-top:1px solid var(--b1);font-size:10px;color:var(--t3)}
+
+.main{flex:1;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+
+/* ── TOPBAR ── */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:var(--s1);border-bottom:1px solid var(--b1);position:sticky;top:0;z-index:10;flex-shrink:0;height:52px}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.ptitle{font-family:var(--fh);font-size:15px;font-weight:800;font-style:italic;letter-spacing:-.2px;text-transform:uppercase}
+.topbar-divider{width:1px;height:18px;background:var(--b1)}
+.tbar-r{display:flex;align-items:center;gap:6px}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:var(--rs);font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .12s;font-family:var(--fb);line-height:1;text-transform:uppercase;letter-spacing:.4px}
+.btn-pr{background:var(--spike);color:#000}
+.btn-pr:hover{background:#36bcf5}
+.btn-gh{background:var(--s3);color:var(--t2);border:1px solid var(--b1)}
+.btn-gh:hover{background:var(--s4);color:var(--t1)}
+.btn-sm{padding:5px 10px;font-size:11px}
+
+/* ── VIEWS ── */
+.view{display:none}.view.active{display:block}
+.content{padding:20px 24px;overflow-y:auto;flex:1}
+
+/* ── KPI CARDS ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:18px}
+.kc{background:var(--s2);border:1px solid var(--b1);border-top:2px solid var(--kc,var(--spike));padding:14px 15px;position:relative;overflow:hidden}
+.kc-lbl{font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+.kc-val{font-family:var(--fh);font-size:28px;font-weight:900;font-style:italic;letter-spacing:-1.5px;line-height:1;color:var(--t1)}
+.kc-val span{font-size:13px;font-weight:500;opacity:.5;font-style:normal}
+.kc-sub{font-size:10px;color:var(--t2);margin-top:4px}
+
+/* ── SECTION ── */
+.sec{margin-bottom:20px}
+.sec-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.sec-title{font-family:var(--fh);font-size:13px;font-weight:800;font-style:italic;text-transform:uppercase;letter-spacing:.3px;display:flex;align-items:center;gap:8px}
+.sec-title::before{content:'';width:3px;height:14px;background:var(--spike);display:inline-block}
+.sec-sub{font-size:10.5px;color:var(--t3);margin-top:2px}
+
+/* ── PILLS ── */
+.pill{display:inline-flex;align-items:center;gap:3px;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:2px;white-space:nowrap;letter-spacing:.3px;text-transform:uppercase}
+.pg{background:rgba(34,212,122,.1);color:var(--gr)}
+.pa{background:rgba(245,166,35,.1);color:var(--am)}
+.pb{background:var(--spike-dim);color:var(--spike)}
+.pr{background:rgba(245,83,83,.1);color:var(--rd)}
+.pp{background:rgba(169,109,247,.1);color:var(--pu)}
+.pt{background:rgba(20,196,178,.1);color:var(--tl)}
+.pgr{background:var(--s3);color:var(--t2)}
+
+/* ── VOLTAGE / TYPE TAGS ── */
+.vtag{display:inline-flex;align-items:center;font-size:10px;font-weight:800;padding:2px 6px;font-family:var(--fm);letter-spacing:.5px}
+.v15{background:rgba(245,83,83,.08);color:#f87171;border:1px solid rgba(245,83,83,.2)}
+.v38{background:rgba(245,166,35,.08);color:#fbbf24;border:1px solid rgba(245,166,35,.2)}
+.vmv{background:var(--spike-dim);color:var(--spike);border:1px solid rgba(41,171,226,.2)}
+.vlv{background:rgba(34,212,122,.08);color:#4ade80;border:1px solid rgba(34,212,122,.2)}
+.ttag{display:inline-flex;align-items:center;font-size:10.5px;font-weight:600;padding:2px 7px;background:var(--s3);color:var(--t2);border:1px solid var(--b1)}
+
+/* ── WORKLOAD CARDS ── */
+.wl-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.ec{background:var(--s2);border:1px solid var(--b1);padding:12px;cursor:pointer;transition:all .12s;position:relative;border-top:2px solid transparent}
+.ec:hover{border-color:var(--b2);border-top-color:var(--spike)}
+.ec.bnb{border-top-color:var(--pu)}
+.ec.over{border-top-color:var(--rd)}
+.ec-hd{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.av{width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:11px;font-weight:900;font-style:italic;flex-shrink:0;border:1px solid}
+.ec-name{font-weight:700;font-size:12.5px;font-family:var(--fh)}
+.ec-role{font-size:10px;color:var(--t3);margin-top:1px;text-transform:uppercase;letter-spacing:.5px}
+.wbar{height:3px;background:var(--s4);margin-bottom:6px}
+.wfill{height:100%;transition:width .6s cubic-bezier(.4,0,.2,1);background:var(--spike)}
+.wfill.hi{background:var(--am)}
+.wfill.ov{background:var(--rd)}
+.wfill.bn{background:var(--pu)}
+.ec-meta{display:flex;justify-content:space-between;font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.4px}
+.ec-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:8px;padding-top:8px;border-top:1px solid var(--b1)}
+.es{font-size:9.5px;color:var(--t2);text-align:center;text-transform:uppercase;letter-spacing:.4px}
+.es strong{display:block;font-size:16px;font-weight:900;font-family:var(--fh);font-style:italic;margin-bottom:0;letter-spacing:-1px}
+
+/* ── TABLE ── */
+.tw{background:var(--s2);border:1px solid var(--b1);overflow:hidden}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:9.5px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px;padding:9px 13px;background:var(--s1);border-bottom:1px solid var(--b1)}
+td{padding:10px 13px;border-bottom:1px solid var(--b1);font-size:12px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.018)}
+.pname{font-weight:600;color:var(--t1)}
+.pid{font-family:var(--fm);font-size:9.5px;color:var(--t3);margin-top:1px}
+
+/* ── MILESTONE DOTS ── */
+.ms-row{display:flex;align-items:center;gap:2px}
+.msd{width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;flex-shrink:0}
+.msd.done{background:rgba(34,212,122,.12);color:var(--gr);border:1px solid rgba(34,212,122,.25)}
+.msd.todo{background:var(--s3);color:var(--t3);border:1px solid var(--b1)}
+
+/* ── PROGRESS BAR ── */
+.pbar{display:flex;align-items:center;gap:6px}
+.ptrack{height:3px;background:var(--s4);overflow:hidden;width:54px}
+.pfill{height:100%;background:var(--spike);transition:width .4s}
+.ppct{font-family:var(--fm);font-size:11px;font-weight:500;min-width:28px;color:var(--spike)}
+
+/* ── FILTER BAR ── */
+.fbar{display:flex;align-items:center;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.fsel{background:var(--s2);border:1px solid var(--b1);color:var(--t2);font-family:var(--fb);font-size:11.5px;padding:5px 24px 5px 9px;cursor:pointer;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg width='10' height='6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23444' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 7px center;transition:border .12s}
+.fsel:focus{border-color:var(--spike);color:var(--t1)}
+.sbox{flex:1;max-width:220px;background:var(--s2);border:1px solid var(--b1);display:flex;align-items:center;gap:5px;padding:5px 9px;transition:border .12s}
+.sbox:focus-within{border-color:var(--spike)}
+.sbox input{background:none;border:none;outline:none;font-family:var(--fb);font-size:11.5px;color:var(--t1);width:100%}
+.sbox input::placeholder{color:var(--t3)}
+
+/* ── CHARTS ── */
+.chart-row{display:grid;gap:8px;margin-bottom:18px}
+.cr2{grid-template-columns:1fr 1fr}
+.cr3{grid-template-columns:1fr 1fr 1fr}
+.cr32{grid-template-columns:2fr 1fr}
+.cc{background:var(--s2);border:1px solid var(--b1);padding:14px 16px;border-top:2px solid var(--b1)}
+.cc-title{font-family:var(--fh);font-size:12px;font-weight:800;font-style:italic;text-transform:uppercase;letter-spacing:.3px;margin-bottom:1px}
+.cc-sub{font-size:10px;color:var(--t3);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px}
+
+/* ── GANTT ── */
+.gantt-wrap{background:var(--s2);border:1px solid var(--b1);overflow:hidden}
+.g-hrow{display:flex;border-bottom:1px solid var(--b1);background:var(--s1)}
+.g-lbl-hd{width:210px;min-width:210px;border-right:1px solid var(--b1);padding:8px 12px;font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px}
+.g-months{flex:1;display:flex}
+.g-month{flex:1;text-align:center;font-size:9px;font-weight:700;padding:8px 2px;color:var(--t3);border-right:1px solid var(--b1);text-transform:uppercase;letter-spacing:.8px}
+.g-month:last-child{border-right:none}
+.g-month.cur{color:var(--spike)}
+.g-row{display:flex;align-items:stretch;border-bottom:1px solid var(--b1);min-height:40px}
+.g-row:last-child{border-bottom:none}
+.g-lbl{width:210px;min-width:210px;border-right:1px solid var(--b1);padding:6px 12px;display:flex;flex-direction:column;justify-content:center}
+.g-lbl-name{font-size:11.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.g-lbl-meta{font-size:9.5px;color:var(--t3);margin-top:1px;text-transform:uppercase;letter-spacing:.3px}
+.g-track{flex:1;position:relative}
+.g-bar{position:absolute;height:16px;top:50%;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;font-family:var(--fm);overflow:hidden;min-width:20px;border-width:1px;border-style:solid}
+.today-line{position:absolute;width:1.5px;height:100%;top:0;opacity:.7;z-index:2;pointer-events:none;background:var(--spike)}
+.g-dot{position:absolute;width:6px;height:6px;top:50%;transform:translate(-50%,-50%);z-index:3;border:1.5px solid var(--bg)}
+.g-legend{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:9px 12px;border-top:1px solid var(--b1);font-size:10px;color:var(--t2)}
+.gl-item{display:flex;align-items:center;gap:4px}
+
+/* ── CALENDAR ── */
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.cal-title{font-family:var(--fh);font-size:22px;font-weight:900;font-style:italic;letter-spacing:-1px;text-transform:uppercase}
+.cal-subtitle{font-size:10px;color:var(--t3);margin-top:2px;text-transform:uppercase;letter-spacing:.8px}
+.cal-controls{display:flex;align-items:center;gap:6px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--b1);border:1px solid var(--b1)}
+.cal-dow{background:var(--s1);padding:7px 8px;font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1.2px;text-align:center}
+.cal-cell{background:var(--s2);min-height:100px;padding:7px;position:relative;vertical-align:top;transition:background .1s;cursor:default}
+.cal-cell:hover{background:var(--s3)}
+.cal-cell.today{background:rgba(41,171,226,.05);border-top:1px solid var(--spike)}
+.cal-cell.other-month{background:var(--s1);opacity:.4}
+.cal-cell.weekend{background:rgba(0,0,0,.3)}
+.cal-day-num{font-family:var(--fh);font-size:11px;font-weight:800;font-style:italic;color:var(--t3);margin-bottom:4px;line-height:1}
+.cal-cell.today .cal-day-num{color:var(--spike)}
+.cal-event{display:flex;align-items:center;padding:2px 5px;margin-bottom:2px;font-size:9px;font-weight:600;cursor:pointer;transition:opacity .1s;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;line-height:1.4;border-left:2px solid currentColor;text-transform:uppercase;letter-spacing:.3px}
+.cal-event:hover{opacity:.75}
+.cal-more{font-size:9px;color:var(--t3);padding:1px 3px;margin-top:2px;cursor:pointer;text-transform:uppercase;letter-spacing:.5px}
+.cal-more:hover{color:var(--spike)}
+.cal-legend{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+.cal-leg-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--t2);text-transform:uppercase;letter-spacing:.5px}
+.cal-leg-dot{width:7px;height:7px;flex-shrink:0}
+.cal-fbar{display:flex;align-items:center;gap:6px;margin-bottom:12px}
+.ev-start{background:rgba(34,212,122,.1);color:#22d47a}
+.ev-end{background:rgba(245,83,83,.1);color:#f55353}
+.ev-active{background:var(--spike-dim);color:var(--spike)}
+.ev-idr{background:rgba(169,109,247,.1);color:#a96df7}
+.ev-ms{background:rgba(245,166,35,.1);color:#f5a623}
+
+/* ── DAY POPUP ── */
+.day-popup{display:none;position:fixed;z-index:200;background:var(--s2);border:1px solid var(--b2);padding:16px;width:300px;box-shadow:0 20px 60px rgba(0,0,0,.8)}
+.day-popup.open{display:block}
+.day-popup-title{font-family:var(--fh);font-size:13px;font-weight:800;font-style:italic;text-transform:uppercase;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.day-popup-close{cursor:pointer;color:var(--t3);font-size:16px;line-height:1}
+.day-popup-close:hover{color:var(--spike)}
+.dp-event{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid var(--b1)}
+.dp-event:last-child{border-bottom:none}
+.dp-ev-dot{width:7px;height:7px;margin-top:4px;flex-shrink:0}
+.dp-ev-name{font-weight:600;font-size:12px}
+.dp-ev-meta{font-size:10px;color:var(--t3);margin-top:1px;text-transform:uppercase;letter-spacing:.4px}
+
+/* ── MODAL ── */
+.mbg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.mbg.open{display:flex}
+.modal{background:var(--s2);border:1px solid var(--b2);border-top:2px solid var(--spike);padding:24px;width:660px;max-width:96vw;max-height:88vh;overflow-y:auto}
+.modal-title{font-family:var(--fh);font-size:18px;font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:.3px;margin-bottom:18px}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ff{display:flex;flex-direction:column;gap:4px}
+.ff.full{grid-column:1/-1}
+.flbl{font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px}
+.finp,.fsel2,.ftxt{background:var(--s3);border:1px solid var(--b1);padding:8px 11px;font-family:var(--fb);font-size:12.5px;color:var(--t1);outline:none;transition:border .12s;width:100%}
+.finp:focus,.fsel2:focus,.ftxt:focus{border-color:var(--spike)}
+.fsel2{appearance:none;background-image:url("data:image/svg+xml,%3Csvg width='10' height='6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23444' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;padding-right:26px;cursor:pointer}
+.ftxt{resize:vertical;min-height:56px}
+.ms-checks{display:flex;gap:5px;flex-wrap:wrap}
+.msc{display:flex;align-items:center;gap:5px;background:var(--s3);border:1px solid var(--b1);padding:6px 9px;cursor:pointer;font-size:11px;font-weight:600;color:var(--t2);transition:all .12s;user-select:none;text-transform:uppercase;letter-spacing:.4px}
+.msc.on{background:rgba(34,212,122,.08);border-color:rgba(34,212,122,.3);color:var(--gr)}
+.msc input{display:none}
+.msc-dot{width:11px;height:11px;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:8px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;padding-top:14px;border-top:1px solid var(--b1)}
+
+/* ── BOSS BADGE ── */
+.boss-badge{display:inline-flex;align-items:center;gap:5px;font-size:9px;font-weight:700;padding:3px 8px;background:var(--spike-dim);color:var(--spike);letter-spacing:1px;text-transform:uppercase;border:1px solid rgba(41,171,226,.2)}
+
+/* ── USER CHIP ── */
+.user-chip{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t2);padding:4px 9px;background:var(--s3);border:1px solid var(--b1)}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--s4)}
+
+/* ── MISC ── */
+.empty{text-align:center;padding:44px;color:var(--t3);font-size:12px;text-transform:uppercase;letter-spacing:.8px}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1400px){.kpi-grid{grid-template-columns:repeat(3,1fr)}.wl-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:1100px){.wl-grid{grid-template-columns:repeat(2,1fr)}.cr3{grid-template-columns:1fr 1fr}.cr32{grid-template-columns:1fr}}
+@media(max-width:900px){.sidebar{display:none}.kpi-grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN SCREEN ═══ -->
+<div id="login-screen" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:999;align-items:center;justify-content:center;flex-direction:column">
+  <!-- big bg bolt -->
+  <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:.03;pointer-events:none" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet"><polygon points="220,20 140,210 195,210 170,390 280,170 220,170" fill="#29ABE2"/></svg>
+  <div style="width:360px;max-width:94vw;position:relative">
+    <!-- SPIKE logo -->
+    <div style="text-align:center;margin-bottom:36px">
+      <div style="font-family:'Barlow',sans-serif;font-size:52px;font-weight:900;font-style:italic;letter-spacing:-3px;line-height:1;display:inline-flex;align-items:center">
+        <span style="color:#fff">SP</span>
+        <svg width="28" height="56" viewBox="0 0 28 56" fill="none" style="margin:0 1px"><polygon points="18,0 6,28 15,28 10,56 25,24 15,24" fill="#29ABE2"/></svg>
+        <span style="color:#fff">KE</span>
+      </div>
+      <div style="font-size:9px;font-weight:700;color:var(--t3);letter-spacing:3px;text-transform:uppercase;margin-top:4px">Engineering · Project Management</div>
+    </div>
+    <div style="background:var(--s2);border:1px solid var(--b1);border-top:2px solid var(--spike);padding:24px">
+      <div style="font-family:var(--fh);font-size:14px;font-weight:800;font-style:italic;text-transform:uppercase;letter-spacing:.3px;margin-bottom:18px">Sign in to your team</div>
+      <div id="signup-fields" style="display:none;margin-bottom:12px">
+        <div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Full Name</div>
+        <input id="login-name" class="finp" placeholder="e.g. Alex Martinez" style="width:100%">
+      </div>
+      <div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Work Email</div>
+      <input id="login-email" class="finp" type="email" placeholder="you@spike.com" style="width:100%;margin-bottom:10px" onkeydown="if(event.key==='Enter')doLogin()">
+      <div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Password</div>
+      <input id="login-pass" class="finp" type="password" placeholder="••••••••" style="width:100%;margin-bottom:14px" onkeydown="if(event.key==='Enter')doLogin()">
+      <div id="login-error" style="display:none;font-size:11px;margin-bottom:10px;padding:7px 9px;background:rgba(245,83,83,.08);border-left:2px solid var(--rd)"></div>
+      <button id="login-btn" class="btn btn-pr" style="width:100%;justify-content:center;padding:10px;font-size:13px" onclick="doLogin()">Sign In</button>
+      <div style="text-align:center;margin-top:12px">
+        <span id="toggle-signup" style="font-size:11px;color:var(--spike);cursor:pointer;text-transform:uppercase;letter-spacing:.5px" onclick="toggleSignup()">No account? Sign up</span>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:14px;font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Powered by Supabase · <span style="color:var(--spike);cursor:pointer" onclick="demoMode()">Try demo mode →</span></div>
+  </div>
+</div>
+
+<!-- ═══ APP LOADING ═══ -->
+<div id="app-loading" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:500;align-items:center;justify-content:center;flex-direction:column;gap:12px">
+  <div style="width:28px;height:28px;border:2px solid var(--s4);border-top-color:var(--spike);border-radius:50%;animation:spin .7s linear infinite"></div>
+  <div style="font-size:11px;color:var(--t2);text-transform:uppercase;letter-spacing:1px">Loading projects…</div>
+</div>
+
+<!-- ═══ TOAST ═══ -->
+<div id="toast" style="position:fixed;bottom:20px;right:20px;background:var(--s3);border:1px solid var(--b2);border-left:2px solid var(--spike);padding:9px 14px;font-size:12px;font-weight:600;z-index:600;opacity:0;transform:translateY(6px);transition:all .22s;pointer-events:none;text-transform:uppercase;letter-spacing:.4px"></div>
+
+<!-- ═══ DEMO BANNER ═══ -->
+<div id="demo-banner" style="display:none;position:sticky;top:52px;z-index:9;background:rgba(245,166,35,.07);border-bottom:1px solid rgba(245,166,35,.2);padding:7px 24px;font-size:11px;color:var(--am);align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.5px">
+  ⚡ <strong>Demo Mode</strong> — data is not saved. <a href="#" onclick="setupInstructions()" style="color:var(--am);text-decoration:underline">Connect Supabase to enable live editing →</a>
+</div>
+
+<style>
+@keyframes spin{to{transform:rotate(360deg)}}
+#toast.show{opacity:1;transform:translateY(0)}
+</style>
+
+<div class="app" id="app-shell" style="display:none">
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-spike">
+      <span class="logo-sp">SP</span>
+      <div class="logo-bolt">
+        <svg width="18" height="36" viewBox="0 0 18 36" fill="none"><polygon points="12,0 4,18 10,18 6,36 16,16 10,16" fill="#29ABE2"/></svg>
+      </div>
+      <span class="logo-ke">KE</span>
+    </div>
+    <div class="logo-sub-row">
+      <div class="logo-sub-line"></div>
+      <div class="logo-sub">Eng Tracker</div>
+      <div class="logo-sub-line"></div>
+    </div>
+  </div>
+  <nav>
+    <div class="nav-grp">
+      <div class="nav-grp-label">Overview</div>
+      <div class="ni active" id="ni-dashboard" onclick="showView('dashboard',this)">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Boss Dashboard
+      </div>
+      <div class="ni" id="ni-kpi" onclick="showView('kpi',this)">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        KPI Reports
+      </div>
+    </div>
+    <div class="nav-grp">
+      <div class="nav-grp-label">Projects</div>
+      <div class="ni" id="ni-projects" onclick="showView('projects',this)">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        All Projects
+      </div>
+      <div class="ni" id="ni-gantt" onclick="showView('gantt',this)">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="4" width="4" height="16" rx="1"/><rect x="9" y="8" width="8" height="4" rx="1"/><rect x="9" y="14" width="5" height="4" rx="1"/></svg>
+        Gantt Timeline
+      </div>
+      <div class="ni" id="ni-calendar" onclick="showView('calendar',this)">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Monthly Calendar
+      </div>
+      <div class="ni" id="ni-bnb" onclick="showView('bnb',this)">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        BNB Team
+      </div>
+    </div>
+    <div class="nav-grp">
+      <div class="nav-grp-label">Engineers</div>
+      <div id="eng-nav-list"></div>
+    </div>
+  </nav>
+  <div class="sb-footer">Last sync: <span id="last-update">—</span></div>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="ptitle" id="page-title">Dashboard</div>
+      <div class="topbar-divider"></div>
+      <div class="boss-badge" id="boss-tag">⚡ Executive View</div>
+    </div>
+    <div class="tbar-r">
+      <div class="user-chip">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        <span id="user-display">—</span>
+      </div>
+      <button class="btn btn-gh btn-sm" onclick="exportCSV()">
+        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export
+      </button>
+      <button class="btn btn-pr btn-sm" onclick="openModal()">
+        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Project
+      </button>
+      <button class="btn btn-gh btn-sm" onclick="doLogout()" title="Sign out" style="padding:5px 7px">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="content">
+
+  <!-- ═══ DASHBOARD ═══ -->
+  <div class="view active" id="view-dashboard">
+    <div class="kpi-grid" id="kpi-row"></div>
+    <div class="chart-row cr3">
+      <div class="cc"><div class="cc-title">Workload by Engineer</div><div class="cc-sub">Active projects per person</div><div style="position:relative;height:180px"><canvas id="cWorkload"></canvas></div></div>
+      <div class="cc"><div class="cc-title">Product Mix</div><div class="cc-sub">All projects by type</div><div style="position:relative;height:180px"><canvas id="cTypes"></canvas></div></div>
+      <div class="cc"><div class="cc-title">Voltage Distribution</div><div class="cc-sub">15kV · 38kV · MV · LV</div><div style="position:relative;height:180px"><canvas id="cVoltage"></canvas></div></div>
+    </div>
+    <div class="sec">
+      <div class="sec-hd">
+        <div><div class="sec-title">Engineer Workload</div><div class="sec-sub">Click any card to view that engineer's projects</div></div>
+        <div style="display:flex;gap:10px;font-size:10px;color:var(--t2);align-items:center;text-transform:uppercase;letter-spacing:.5px">
+          <span style="display:flex;align-items:center;gap:4px"><span style="width:7px;height:7px;background:var(--spike);display:inline-block"></span>Normal</span>
+          <span style="display:flex;align-items:center;gap:4px"><span style="width:7px;height:7px;background:var(--am);display:inline-block"></span>Heavy</span>
+          <span style="display:flex;align-items:center;gap:4px"><span style="width:7px;height:7px;background:var(--rd);display:inline-block"></span>Overloaded</span>
+        </div>
+      </div>
+      <div class="wl-grid" id="workload-grid"></div>
+    </div>
+    <div class="sec">
+      <div class="sec-hd">
+        <div class="sec-title">Active Projects — Live Status</div>
+        <button class="btn btn-gh btn-sm" onclick="showView('projects',document.getElementById('ni-projects'))">View All →</button>
+      </div>
+      <div class="tw"><table><thead><tr><th>Project</th><th>Engineer</th><th>Type</th><th>Voltage</th><th>PM / Sales</th><th>Milestones</th><th>Progress</th><th>Status</th></tr></thead><tbody id="dash-table"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- ═══ PROJECTS ═══ -->
+  <div class="view" id="view-projects">
+    <div class="fbar">
+      <div class="sbox"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="opacity:.4;flex-shrink:0"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="s-proj" placeholder="Search projects…" oninput="renderProjects()"></div>
+      <select class="fsel" id="f-eng" onchange="renderProjects()"><option value="">All Engineers</option></select>
+      <select class="fsel" id="f-type" onchange="renderProjects()"><option value="">All Types</option><option>Switchrack</option><option>Switchgear</option><option>MCC</option><option>Transformer</option><option>Panel</option><option>Bus Duct</option><option>Load Center</option></select>
+      <select class="fsel" id="f-volt" onchange="renderProjects()"><option value="">All Voltages</option><option>15kV</option><option>38kV</option><option>Medium Voltage</option><option>Low Voltage</option></select>
+      <select class="fsel" id="f-stat" onchange="renderProjects()"><option value="">All Statuses</option><option>In Progress</option><option>Complete</option><option>On Hold</option></select>
+      <select class="fsel" id="f-ms" onchange="renderProjects()"><option value="">All Milestones</option><option value="idr_pending">IDR Pending</option><option value="ifa_done">IFA Done</option><option value="ifc_done">IFC Done</option><option value="live">Live on Floor</option></select>
+    </div>
+    <div class="tw"><table><thead><tr><th>ID</th><th>Project Name</th><th>Engineer</th><th>Type</th><th>Voltage</th><th>PM</th><th>Sales</th><th>Start</th><th>Target</th><th>DES→IFA→IFC→ADJ→IDR→LIV</th><th>Progress</th><th>Status</th><th></th></tr></thead><tbody id="proj-table"></tbody></table></div>
+  </div>
+
+  <!-- ═══ GANTT ═══ -->
+  <div class="view" id="view-gantt">
+    <div class="fbar">
+      <select class="fsel" id="g-eng" onchange="renderGantt()"><option value="">All Engineers</option></select>
+      <select class="fsel" id="g-type" onchange="renderGantt()"><option value="">All Types</option><option>Switchrack</option><option>Switchgear</option><option>MCC</option><option>Transformer</option><option>Panel</option><option>Bus Duct</option><option>Load Center</option></select>
+      <select class="fsel" id="g-stat" onchange="renderGantt()"><option value="">All Statuses</option><option>In Progress</option><option>Complete</option><option>On Hold</option></select>
+    </div>
+    <div class="gantt-wrap" id="gantt-container"></div>
+  </div>
+
+  <!-- ═══ CALENDAR ═══ -->
+  <div class="view" id="view-calendar">
+    <div class="cal-nav">
+      <div>
+        <div class="cal-title" id="cal-title">March 2025</div>
+        <div class="cal-subtitle" id="cal-subtitle">0 projects active</div>
+      </div>
+      <div class="cal-controls">
+        <div class="cal-fbar" style="margin-bottom:0">
+          <select class="fsel" id="cal-eng" onchange="renderCalendar()"><option value="">All Engineers</option></select>
+          <select class="fsel" id="cal-type" onchange="renderCalendar()"><option value="">All Types</option><option>Switchrack</option><option>Switchgear</option><option>MCC</option><option>Transformer</option><option>Panel</option><option>Bus Duct</option><option>Load Center</option></select>
+        </div>
+        <button class="btn btn-gh btn-sm" onclick="calStep(-1)">← Prev</button>
+        <button class="btn btn-gh btn-sm" onclick="calToday()">Today</button>
+        <button class="btn btn-gh btn-sm" onclick="calStep(1)">Next →</button>
+      </div>
+    </div>
+    <div class="cal-legend">
+      <span style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px">Legend:</span>
+      <span class="cal-leg-item"><span class="cal-leg-dot" style="background:var(--gr)"></span>Starts</span>
+      <span class="cal-leg-item"><span class="cal-leg-dot" style="background:var(--rd)"></span>Target end</span>
+      <span class="cal-leg-item"><span class="cal-leg-dot" style="background:var(--spike)"></span>Active</span>
+      <span class="cal-leg-item"><span class="cal-leg-dot" style="background:var(--pu)"></span>IDR due</span>
+      <span class="cal-leg-item" style="color:var(--spike)"><span style="width:1px;height:10px;background:var(--spike);display:inline-block"></span>Today</span>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+  </div>
+
+  <!-- ═══ KPI ═══ -->
+  <div class="view" id="view-kpi">
+    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px">
+      <div class="kc" style="--kc:var(--spike)"><div class="kc-lbl">Total Projects YTD</div><div class="kc-val" id="k-ytd">0</div><div class="kc-sub">All engineers + BNB</div></div>
+      <div class="kc" style="--kc:var(--gr)"><div class="kc-lbl">On-Time Delivery</div><div class="kc-val">84<span>%</span></div><div class="kc-sub"><span class="pill pg">↑ 6pp vs last Q</span></div></div>
+      <div class="kc" style="--kc:var(--am)"><div class="kc-lbl">IDR Completion Rate</div><div class="kc-val">91<span>%</span></div><div class="kc-sub">Internal design reviews</div></div>
+      <div class="kc" style="--kc:var(--pu)"><div class="kc-lbl">BNB Share</div><div class="kc-val" id="k-bnbpct">0<span>%</span></div><div class="kc-sub">Of total active work</div></div>
+    </div>
+    <div class="chart-row cr2">
+      <div class="cc"><div class="cc-title">Monthly Completions</div><div class="cc-sub">Projects completed per month (trailing 6 mo)</div><div style="position:relative;height:200px"><canvas id="cMonthly"></canvas></div></div>
+      <div class="cc"><div class="cc-title">Cycle Time by Product Type</div><div class="cc-sub">Average weeks: design phase vs total</div><div style="position:relative;height:200px"><canvas id="cCycle"></canvas></div></div>
+    </div>
+    <div class="chart-row cr32">
+      <div class="cc"><div class="cc-title">Engineer Throughput</div><div class="cc-sub">Completed projects per engineer</div><div style="position:relative;height:170px"><canvas id="cThroughput"></canvas></div></div>
+      <div class="cc"><div class="cc-title">Milestone Health</div><div class="cc-sub">% active projects with milestone done</div><div style="position:relative;height:170px"><canvas id="cMsHealth"></canvas></div></div>
+    </div>
+    <div class="sec" style="margin-top:18px">
+      <div class="sec-title" style="margin-bottom:10px">KPI Summary — Sales Team</div>
+      <div class="tw"><table><thead><tr><th>Product Type</th><th>Completed</th><th>Avg Design Time</th><th>Avg Total Time</th><th>IFA Rate</th><th>IFC Rate</th><th>IDR Rate</th><th>On-Time %</th></tr></thead>
+      <tbody>
+        <tr><td class="pname">Switchrack</td><td>14</td><td>3.2 wks</td><td>8.5 wks</td><td><span class="pill pg">100%</span></td><td><span class="pill pg">93%</span></td><td><span class="pill pg">93%</span></td><td><span class="pill pg">86%</span></td></tr>
+        <tr><td class="pname">Switchgear</td><td>8</td><td>4.1 wks</td><td>11.2 wks</td><td><span class="pill pg">100%</span></td><td><span class="pill pa">80%</span></td><td><span class="pill pa">80%</span></td><td><span class="pill pa">75%</span></td></tr>
+        <tr><td class="pname">MCC</td><td>6</td><td>5.0 wks</td><td>14.0 wks</td><td><span class="pill pa">83%</span></td><td><span class="pill pa">83%</span></td><td><span class="pill pg">91%</span></td><td><span class="pill pg">83%</span></td></tr>
+        <tr><td class="pname">Transformer</td><td>4</td><td>2.5 wks</td><td>6.8 wks</td><td><span class="pill pg">100%</span></td><td><span class="pill pg">100%</span></td><td><span class="pill pg">100%</span></td><td><span class="pill pg">100%</span></td></tr>
+        <tr><td class="pname">Panel</td><td>5</td><td>1.8 wks</td><td>4.2 wks</td><td><span class="pill pg">100%</span></td><td><span class="pill pg">100%</span></td><td><span class="pill pg">100%</span></td><td><span class="pill pg">100%</span></td></tr>
+        <tr><td class="pname">Bus Duct</td><td>3</td><td>2.2 wks</td><td>5.5 wks</td><td><span class="pill pg">100%</span></td><td><span class="pill pg">100%</span></td><td><span class="pill pa">67%</span></td><td><span class="pill pg">100%</span></td></tr>
+        <tr><td class="pname">Load Center</td><td>2</td><td>1.5 wks</td><td>3.8 wks</td><td><span class="pill pg">100%</span></td><td><span class="pill pg">100%</span></td><td><span class="pill pg">100%</span></td><td><span class="pill pg">100%</span></td></tr>
+      </tbody></table></div>
+    </div>
+  </div>
+
+  <!-- ═══ BNB ═══ -->
+  <div class="view" id="view-bnb">
+    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px">
+      <div class="kc" style="--kc:var(--pu)"><div class="kc-lbl">BNB Active</div><div class="kc-val" id="bnb-active">0</div><div class="kc-sub">Projects currently assigned</div></div>
+      <div class="kc" style="--kc:var(--tl)"><div class="kc-lbl">Avg Progress</div><div class="kc-val" id="bnb-prog">—</div><div class="kc-sub">Across all BNB work</div></div>
+      <div class="kc" style="--kc:var(--am)"><div class="kc-lbl">IDR Pending</div><div class="kc-val" id="bnb-idrp">0</div><div class="kc-sub">Awaiting internal review</div></div>
+      <div class="kc" style="--kc:var(--rd)"><div class="kc-lbl">On Hold</div><div class="kc-val" id="bnb-hold">0</div><div class="kc-sub">Paused projects</div></div>
+    </div>
+    <div class="tw"><table><thead><tr><th>Project</th><th>Type</th><th>Voltage</th><th>PM / Sales</th><th>Internal Lead</th><th>Milestones</th><th>Progress</th><th>Status</th><th></th></tr></thead><tbody id="bnb-table"></tbody></table></div>
+  </div>
+
+  <!-- ═══ ENGINEER VIEW ═══ -->
+  <div class="view" id="view-engineer"><div id="eng-view-content"></div></div>
+
+  </div>
+</main>
+</div><!-- /app-shell -->
+
+<!-- ═══ MODAL ═══ -->
+<div class="mbg" id="add-modal" onclick="if(event.target===this)closeModal()">
+<div class="modal">
+  <div class="modal-title" id="modal-title">Add New Project</div>
+  <div class="fg">
+    <div class="ff"><div class="flbl">Project ID</div><input class="finp" id="f-id" placeholder="e.g. P-2025-042"></div>
+    <div class="ff"><div class="flbl">Project Name *</div><input class="finp" id="f-name" placeholder="e.g. Bay 3 Switchrack Unit"></div>
+    <div class="ff full"><div class="flbl">Description</div><textarea class="ftxt" id="f-desc" placeholder="Scope, location, special notes…"></textarea></div>
+    <div class="ff"><div class="flbl">Engineer *</div><select class="fsel2" id="f-engineer"><option value="">Select engineer…</option></select></div>
+    <div class="ff"><div class="flbl">Product Type *</div><select class="fsel2" id="f-type-m"><option value="">Select type…</option><option>Switchrack</option><option>Switchgear</option><option>MCC</option><option>Transformer</option><option>Panel</option><option>Bus Duct</option><option>Load Center</option></select></div>
+    <div class="ff"><div class="flbl">Voltage Level *</div><select class="fsel2" id="f-voltage"><option value="">Select voltage…</option><option>15kV</option><option>38kV</option><option>Medium Voltage</option><option>Low Voltage</option></select></div>
+    <div class="ff"><div class="flbl">Project Manager</div><input class="finp" id="f-pm" placeholder="PM full name"></div>
+    <div class="ff"><div class="flbl">Sales Rep</div><input class="finp" id="f-sales" placeholder="Sales rep name"></div>
+    <div class="ff"><div class="flbl">Start Date</div><input class="finp" id="f-start" type="date"></div>
+    <div class="ff"><div class="flbl">Target Live Date</div><input class="finp" id="f-end" type="date"></div>
+    <div class="ff full"><div class="flbl" style="margin-bottom:6px">Milestones Completed</div>
+      <div class="ms-checks">
+        <label class="msc" id="mc-design"><span class="msc-dot"></span>Design<input type="checkbox"></label>
+        <label class="msc" id="mc-ifa"><span class="msc-dot"></span>IFA<input type="checkbox"></label>
+        <label class="msc" id="mc-ifc"><span class="msc-dot"></span>IFC<input type="checkbox"></label>
+        <label class="msc" id="mc-adj"><span class="msc-dot"></span>Adjustments<input type="checkbox"></label>
+        <label class="msc" id="mc-idr"><span class="msc-dot"></span>IDR<input type="checkbox"></label>
+        <label class="msc" id="mc-live"><span class="msc-dot"></span>Live on Floor<input type="checkbox"></label>
+      </div>
+    </div>
+  </div>
+  <div class="modal-actions">
+    <button class="btn btn-gh" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-pr" onclick="saveProject()">Save Project</button>
+  </div>
+</div>
+</div>
+
+<!-- ═══ DAY POPUP ═══ -->
+<div class="day-popup" id="day-popup">
+  <div class="day-popup-title"><span id="dp-title">March 1</span><span class="day-popup-close" onclick="closeDayPopup()">✕</span></div>
+  <div id="dp-events"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+// ════ DATA ════════════════════════════════════════════════════════════════
+const ENGINEERS = [
+  {id:'AM', name:'A. Martinez', color:'#29ABE2', bg:'rgba(41,171,226,.15)', role:'Sr. Engineer'},
+  {id:'JP', name:'J. Patel',    color:'#22d47a', bg:'rgba(34,212,122,.15)', role:'Engineer'},
+  {id:'SK', name:'S. Kim',      color:'#f5a623', bg:'rgba(245,166,35,.15)', role:'Sr. Engineer'},
+  {id:'RT', name:'R. Thompson', color:'#14c4b2', bg:'rgba(20,196,178,.15)', role:'Engineer'},
+  {id:'LG', name:'L. Garcia',   color:'#f97244', bg:'rgba(249,114,68,.15)', role:'Jr. Engineer'},
+  {id:'DN', name:'D. Nguyen',   color:'#f55353', bg:'rgba(245,83,83,.15)',  role:'Engineer'},
+  {id:'CB', name:'C. Brooks',   color:'#e855a0', bg:'rgba(232,85,160,.15)', role:'Sr. Engineer'},
+  {id:'TW', name:'T. Wallace',  color:'#a96df7', bg:'rgba(169,109,247,.15)',role:'Engineer'},
+  {id:'HR', name:'H. Reyes',    color:'#29ABE2', bg:'rgba(41,171,226,.15)', role:'Jr. Engineer'},
+  {id:'BN', name:'BNB Team',    color:'#a96df7', bg:'rgba(169,109,247,.15)',role:'External', isBnb:true},
+];
+
+let PROJECTS = [
+  {id:'P-001',name:'Bay 3 Switchrack',       engineer:'A. Martinez',type:'Switchrack', voltage:'15kV',          pm:'C. Davis', sales:'M. Wilson',status:'In Progress',start:'2025-01-10',end:'2025-04-15',ms:{design:true, ifa:true, ifc:false,adj:false,idr:false,live:false}},
+  {id:'P-002',name:'Unit Sub 4 Switchgear',  engineer:'A. Martinez',type:'Switchgear', voltage:'38kV',          pm:'T. Baker', sales:'K. Lee',   status:'In Progress',start:'2025-02-01',end:'2025-06-30',ms:{design:true, ifa:false,ifc:false,adj:false,idr:false,live:false}},
+  {id:'P-003',name:'Injection Pump Rack A',  engineer:'A. Martinez',type:'Switchrack', voltage:'15kV',          pm:'C. Davis', sales:'A. Perez', status:'In Progress',start:'2025-03-10',end:'2025-06-01',ms:{design:false,ifa:false,ifc:false,adj:false,idr:false,live:false}},
+  {id:'P-004',name:'Transformer TX-14',      engineer:'A. Martinez',type:'Transformer',voltage:'38kV',          pm:'R. Evans', sales:'M. Wilson',status:'Complete',   start:'2024-11-01',end:'2025-02-01',ms:{design:true, ifa:true, ifc:true, adj:true, idr:true, live:true }},
+  {id:'P-005',name:'Motor Control Ctr A',    engineer:'J. Patel',   type:'MCC',        voltage:'Low Voltage',   pm:'C. Davis', sales:'M. Wilson',status:'In Progress',start:'2025-01-20',end:'2025-05-10',ms:{design:true, ifa:true, ifc:true, adj:false,idr:true, live:false}},
+  {id:'P-006',name:'Compressor Rack B2',     engineer:'J. Patel',   type:'Switchrack', voltage:'15kV',          pm:'R. Evans', sales:'A. Perez', status:'Complete',   start:'2024-11-01',end:'2025-02-28',ms:{design:true, ifa:true, ifc:true, adj:true, idr:true, live:true }},
+  {id:'P-007',name:'Bus Duct Run East',      engineer:'J. Patel',   type:'Bus Duct',   voltage:'Medium Voltage',pm:'T. Baker', sales:'K. Lee',   status:'In Progress',start:'2025-02-15',end:'2025-05-30',ms:{design:true, ifa:false,ifc:false,adj:false,idr:false,live:false}},
+  {id:'P-008',name:'Plant 2 MV Panel',       engineer:'S. Kim',     type:'Panel',      voltage:'Medium Voltage',pm:'T. Baker', sales:'K. Lee',   status:'In Progress',start:'2025-02-15',end:'2025-07-01',ms:{design:true, ifa:true, ifc:false,adj:false,idr:false,live:false}},
+  {id:'P-009',name:'Transformer TX-12',      engineer:'S. Kim',     type:'Transformer',voltage:'38kV',          pm:'C. Davis', sales:'M. Wilson',status:'In Progress',start:'2025-03-01',end:'2025-05-15',ms:{design:false,ifa:false,ifc:false,adj:false,idr:false,live:false}},
+  {id:'P-010',name:'Load Center LC-7',       engineer:'S. Kim',     type:'Load Center',voltage:'Low Voltage',   pm:'R. Evans', sales:'A. Perez', status:'In Progress',start:'2025-01-15',end:'2025-04-01',ms:{design:true, ifa:true, ifc:true, adj:true, idr:false,live:false}},
+  {id:'P-011',name:'MCC South Wing',         engineer:'S. Kim',     type:'MCC',        voltage:'Low Voltage',   pm:'T. Baker', sales:'K. Lee',   status:'On Hold',    start:'2025-02-01',end:'2025-08-01',ms:{design:true, ifa:false,ifc:false,adj:false,idr:false,live:false}},
+  {id:'P-012',name:'Distribution Rack DR5',  engineer:'R. Thompson',type:'Switchrack', voltage:'15kV',          pm:'R. Evans', sales:'A. Perez', status:'In Progress',start:'2025-01-05',end:'2025-04-20',ms:{design:true, ifa:true, ifc:true, adj:true, idr:false,live:false}},
+  {id:'P-013',name:'Wellhead Control Panel', engineer:'R. Thompson',type:'Panel',      voltage:'Low Voltage',   pm:'T. Baker', sales:'K. Lee',   status:'In Progress',start:'2025-02-10',end:'2025-05-30',ms:{design:true, ifa:false,ifc:false,adj:false,idr:false,live:false}},
+  {id:'P-014',name:'38kV Switchgear Unit 2', engineer:'R. Thompson',type:'Switchgear', voltage:'38kV',          pm:'C. Davis', sales:'M. Wilson',status:'In Progress',start:'2025-03-01',end:'2025-07-15',ms:{design:false,ifa:false,ifc:false,adj:false,idr:false,live:false}},
+  {id:'P-015',name:'Compressor MCC South',   engineer:'L. Garcia',  type:'MCC',        voltage:'Low Voltage',   pm:'C. Davis', sales:'M. Wilson',status:'In Progress',start:'2025-02-20',end:'2025-06-10',ms:{design:true, ifa:false,ifc:false,adj:false,idr:false,live:false}},
+  {id:'P-016',name:'LV Panel Upgrade',       engineer:'L. Garcia',  type:'Panel',      voltage:'Low Voltage',   pm:'T. Baker', sales:'K. Lee',   status:'Complete',   start:'2024-12-01',end:'2025-03-01',ms:{design:true, ifa:true, ifc:true, adj:true, idr:true, live:true }},
+  {id:'P-017',name:'Bus Duct BD-2',          engineer:'L. Garcia',  type:'Bus Duct',   voltage:'Medium Voltage',pm:'R. Evans', sales:'A. Perez', status:'In Progress',start:'2025-03-15',end:'2025-07-01',ms:{design:false,ifa:false,ifc:false,adj:false,idr:false,live:false}},
+  {id:'P-018',name:'Skid Mounted Gear 7',    engineer:'D. Nguyen',  type:'Switchgear', voltage:'Medium Voltage',pm:'R. Evans', sales:'A. Perez', status:'On Hold',    start:'2025-01-15',end:'2025-08-01',ms:{design:true, ifa:false,ifc:false,adj:false,idr:false,live:false}},
+  {id:'P-019',name:'Transformer TX-09',      engineer:'D. Nguyen',  type:'Transformer',voltage:'15kV',          pm:'C. Davis', sales:'K. Lee',   status:'In Progress',start:'2025-02-01',end:'2025-05-01',ms:{design:true, ifa:true, ifc:false,adj:false,idr:false,live:false}},
+  {id:'P-020',name:'Load Center LC-3',       engineer:'D. Nguyen',  type:'Load Center',voltage:'Low Voltage',   pm:'T. Baker', sales:'M. Wilson',status:'Complete',   start:'2024-12-15',end:'2025-03-15',ms:{design:true, ifa:true, ifc:true, adj:true, idr:true, live:true }},
+  {id:'P-021',name:'Main Bus 15kV',          engineer:'C. Brooks',  type:'Switchrack', voltage:'15kV',          pm:'R. Evans', sales:'A. Perez', status:'In Progress',start:'2025-01-20',end:'2025-05-15',ms:{design:true, ifa:true, ifc:true, adj:false,idr:false,live:false}},
+  {id:'P-022',name:'MCC Unit 3 West',        engineer:'C. Brooks',  type:'MCC',        voltage:'Low Voltage',   pm:'C. Davis', sales:'M. Wilson',status:'In Progress',start:'2025-02-10',end:'2025-06-01',ms:{design:true, ifa:false,ifc:false,adj:false,idr:false,live:false}},
+  {id:'P-023',name:'38kV Gear Package C',    engineer:'C. Brooks',  type:'Switchgear', voltage:'38kV',          pm:'T. Baker', sales:'K. Lee',   status:'In Progress',start:'2025-03-01',end:'2025-08-01',ms:{design:false,ifa:false,ifc:false,adj:false,idr:false,live:false}},
+  {id:'P-024',name:'Pump Panel PP-5',        engineer:'C. Brooks',  type:'Panel',      voltage:'Low Voltage',   pm:'R. Evans', sales:'A. Perez', status:'Complete',   start:'2024-10-01',end:'2025-01-15',ms:{design:true, ifa:true, ifc:true, adj:true, idr:true, live:true }},
+  {id:'P-025',name:'Injection MV Rack',      engineer:'T. Wallace', type:'Switchrack', voltage:'Medium Voltage',pm:'C. Davis', sales:'M. Wilson',status:'In Progress',start:'2025-02-01',end:'2025-05-20',ms:{design:true, ifa:true, ifc:false,adj:false,idr:false,live:false}},
+  {id:'P-026',name:'Transformer Bank TB-4',  engineer:'T. Wallace', type:'Transformer',voltage:'38kV',          pm:'T. Baker', sales:'K. Lee',   status:'In Progress',start:'2025-03-10',end:'2025-07-01',ms:{design:false,ifa:false,ifc:false,adj:false,idr:false,live:false}},
+  {id:'P-027',name:'Bus Duct BD-5',          engineer:'T. Wallace', type:'Bus Duct',   voltage:'Medium Voltage',pm:'R. Evans', sales:'A. Perez', status:'Complete',   start:'2024-11-15',end:'2025-02-15',ms:{design:true, ifa:true, ifc:true, adj:true, idr:true, live:true }},
+  {id:'P-028',name:'Load Center LC-1',       engineer:'H. Reyes',   type:'Load Center',voltage:'Low Voltage',   pm:'C. Davis', sales:'M. Wilson',status:'In Progress',start:'2025-01-10',end:'2025-03-30',ms:{design:true, ifa:true, ifc:true, adj:false,idr:false,live:false}},
+  {id:'P-029',name:'Control Panel CP-8',     engineer:'H. Reyes',   type:'Panel',      voltage:'Low Voltage',   pm:'T. Baker', sales:'K. Lee',   status:'In Progress',start:'2025-02-20',end:'2025-05-01',ms:{design:true, ifa:false,ifc:false,adj:false,idr:false,live:false}},
+  {id:'P-030',name:'BNB Bay 7 Switchrack',   engineer:'BNB Team',   type:'Switchrack', voltage:'15kV',          pm:'T. Baker', sales:'K. Lee',   status:'In Progress',start:'2025-01-25',end:'2025-04-30',ms:{design:true, ifa:true, ifc:false,adj:false,idr:false,live:false}},
+  {id:'P-031',name:'BNB Pump Panel PP-3',    engineer:'BNB Team',   type:'Panel',      voltage:'Low Voltage',   pm:'C. Davis', sales:'M. Wilson',status:'In Progress',start:'2025-02-05',end:'2025-05-20',ms:{design:true, ifa:false,ifc:false,adj:false,idr:false,live:false}},
+  {id:'P-032',name:'BNB MV Distribution A',  engineer:'BNB Team',   type:'Switchgear', voltage:'Medium Voltage',pm:'R. Evans', sales:'A. Perez', status:'In Progress',start:'2025-03-01',end:'2025-07-15',ms:{design:false,ifa:false,ifc:false,adj:false,idr:false,live:false}},
+  {id:'P-033',name:'BNB MCC Remote',         engineer:'BNB Team',   type:'MCC',        voltage:'Low Voltage',   pm:'T. Baker', sales:'K. Lee',   status:'On Hold',    start:'2025-02-15',end:'2025-06-30',ms:{design:true, ifa:false,ifc:false,adj:false,idr:false,live:false}},
+];
+
+// ════ HELPERS ════════════════════════════════════════════════════════════
+function msPct(ms){const k=['design','ifa','ifc','adj','idr','live'];return Math.round(k.filter(x=>ms[x]).length/k.length*100)}
+function getEng(name){return ENGINEERS.find(e=>e.name===name)||{color:'#29ABE2',bg:'rgba(41,171,226,.15)',id:'??'}}
+function vcls(v){return v==='15kV'?'v15':v==='38kV'?'v38':v==='Medium Voltage'?'vmv':'vlv'}
+function vshort(v){return v==='15kV'?'15kV':v==='38kV'?'38kV':v==='Medium Voltage'?'MV':'LV'}
+function spill(s){return s==='Complete'?'<span class="pill pg">Complete</span>':s==='On Hold'?'<span class="pill pa">On Hold</span>':'<span class="pill pb">In Progress</span>'}
+function msBadges(ms){
+  const map={design:'DES',ifa:'IFA',ifc:'IFC',adj:'ADJ',idr:'IDR',live:'LIV'};
+  return Object.entries(map).map(([k,l])=>`<span class="msd ${ms[k]?'done':'todo'}" title="${l}">${ms[k]?'✓':'·'}</span>`).join('');
+}
+function av(eng,size=34){
+  return `<div class="av" style="width:${size}px;height:${size}px;font-size:${Math.round(size*.32)}px;background:${eng.bg};color:${eng.color};border-color:${eng.color}33">${eng.id}</div>`;
+}
+function fmt(d){if(!d)return'—';const dt=new Date(d+'T00:00');return dt.toLocaleDateString('en-US',{month:'short',day:'numeric'})}
+
+// ════ VIEWS ════════════════════════════════════════════════════════════
+function showView(name,el){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  if(el) el.classList.add('active');
+  const titles={dashboard:'Dashboard',kpi:'KPI Reports',projects:'All Projects',gantt:'Gantt Timeline',bnb:'BNB Team',engineer:'Engineer View',calendar:'Monthly Calendar'};
+  document.getElementById('page-title').textContent=titles[name]||name;
+  document.getElementById('boss-tag').style.display=name==='dashboard'?'':'none';
+  const renders={dashboard:renderDashboard,projects:()=>{populateFilters();renderProjects()},gantt:()=>{populateGanttFilters();renderGantt()},calendar:()=>{populateCalFilters();renderCalendar()},kpi:renderKPI,bnb:renderBNB};
+  if(renders[name]) renders[name]();
+}
+
+function buildEngNav(){
+  document.getElementById('eng-nav-list').innerHTML=ENGINEERS.map(e=>`<div class="ni" onclick="viewEngineer('${e.name}',this)">${av(e,18)}<span style="font-size:12px">${e.name}</span></div>`).join('');
+}
+
+// ════ DASHBOARD ════════════════════════════════════════════════════════
+let charts={};
+function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
+
+function renderDashboard(){
+  const active=PROJECTS.filter(p=>p.status!=='Complete');
+  const done=PROJECTS.filter(p=>p.status==='Complete');
+  const bnb=PROJECTS.filter(p=>p.engineer==='BNB Team');
+  const onHold=PROJECTS.filter(p=>p.status==='On Hold');
+  const idrPend=PROJECTS.filter(p=>!p.ms.idr&&p.status!=='Complete');
+  const inProg=PROJECTS.filter(p=>p.status==='In Progress');
+
+  document.getElementById('kpi-row').innerHTML=`
+    <div class="kc" style="--kc:var(--spike)"><div class="kc-lbl">Active Projects</div><div class="kc-val">${active.length}</div><div class="kc-sub">${inProg.length} in progress · ${onHold.length} on hold</div></div>
+    <div class="kc" style="--kc:var(--gr)"><div class="kc-lbl">Completed</div><div class="kc-val">${done.length}</div><div class="kc-sub">All time completions</div></div>
+    <div class="kc" style="--kc:var(--am)"><div class="kc-lbl">Avg Cycle Time</div><div class="kc-val">8.5<span>wk</span></div><div class="kc-sub">Design → Live on floor</div></div>
+    <div class="kc" style="--kc:var(--pu)"><div class="kc-lbl">BNB Projects</div><div class="kc-val">${bnb.length}</div><div class="kc-sub">External team</div></div>
+    <div class="kc" style="--kc:var(--rd)"><div class="kc-lbl">IDR Pending</div><div class="kc-val">${idrPend.length}</div><div class="kc-sub">Needs review</div></div>
+    <div class="kc" style="--kc:var(--tl)"><div class="kc-lbl">Engineers Active</div><div class="kc-val">${ENGINEERS.filter(e=>!e.isBnb&&PROJECTS.some(p=>p.engineer===e.name&&p.status!=='Complete')).length}<span>/${ENGINEERS.filter(e=>!e.isBnb).length}</span></div><div class="kc-sub">Of total team</div></div>`;
+
+  const nonBnb=ENGINEERS.filter(e=>!e.isBnb);
+  const C='#29ABE2';
+  destroyChart('cWorkload');
+  charts.cWorkload=new Chart(document.getElementById('cWorkload'),{
+    type:'bar',
+    data:{labels:nonBnb.map(e=>e.name.split('.')[1]?.trim()||e.name),
+      datasets:[{data:nonBnb.map(e=>PROJECTS.filter(p=>p.engineer===e.name&&p.status!=='Complete').length),backgroundColor:nonBnb.map(e=>e.color+'33'),borderColor:nonBnb.map(e=>e.color),borderWidth:1.5,borderRadius:2,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{y:{ticks:{color:'#444',font:{size:9}},grid:{color:'rgba(255,255,255,0.04)'},beginAtZero:true},x:{ticks:{color:'#444',font:{size:9}},grid:{display:false}}}}
+  });
+
+  const types={};PROJECTS.forEach(p=>{types[p.type]=(types[p.type]||0)+1});
+  const tCol={'Switchrack':'#29ABE2','Switchgear':'#14c4b2','MCC':'#f5a623','Transformer':'#a96df7','Panel':'#22d47a','Bus Duct':'#f97244','Load Center':'#e855a0'};
+  destroyChart('cTypes');
+  charts.cTypes=new Chart(document.getElementById('cTypes'),{
+    type:'doughnut',
+    data:{labels:Object.keys(types),datasets:[{data:Object.values(types),backgroundColor:Object.keys(types).map(k=>(tCol[k]||'#888')+'44'),borderColor:Object.keys(types).map(k=>tCol[k]||'#888'),borderWidth:1.5}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{color:'#666',font:{size:9},boxWidth:8,padding:5}}}}
+  });
+
+  const volts={};PROJECTS.forEach(p=>{const s=vshort(p.voltage);volts[s]=(volts[s]||0)+1});
+  const vCol={'15kV':'#f55353','38kV':'#f5a623','MV':'#29ABE2','LV':'#22d47a'};
+  destroyChart('cVoltage');
+  charts.cVoltage=new Chart(document.getElementById('cVoltage'),{
+    type:'doughnut',
+    data:{labels:Object.keys(volts),datasets:[{data:Object.values(volts),backgroundColor:Object.keys(volts).map(k=>(vCol[k]||'#888')+'44'),borderColor:Object.keys(volts).map(k=>vCol[k]||'#888'),borderWidth:1.5}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{color:'#666',font:{size:9},boxWidth:8,padding:5}}}}
+  });
+
+  const MAX_LOAD=5;
+  document.getElementById('workload-grid').innerHTML=ENGINEERS.map(eng=>{
+    const projs=PROJECTS.filter(p=>p.engineer===eng.name&&p.status!=='Complete');
+    const pct=Math.min(Math.round(projs.length/MAX_LOAD*100),100);
+    const lc=pct>=100?'ov':pct>=70?'hi':'';
+    const fillCls=eng.isBnb?'bn':lc;
+    const dotColor=pct>=100?'#f55353':pct>=70?'#f5a623':'#29ABE2';
+    const done=PROJECTS.filter(p=>p.engineer===eng.name&&p.status==='Complete').length;
+    const idrDone=projs.filter(p=>p.ms.idr).length;
+    return `<div class="ec ${eng.isBnb?'bnb':''} ${pct>=100?'over':''}" onclick="viewEngineer('${eng.name}',null)">
+      <div class="ec-hd">
+        ${av(eng,34)}
+        <div>
+          <div class="ec-name">${eng.name}</div>
+          <div class="ec-role">${eng.role}</div>
+        </div>
+        <div style="margin-left:auto"><span style="width:6px;height:6px;background:${dotColor};display:inline-block;box-shadow:0 0 8px ${dotColor}"></span></div>
+      </div>
+      <div class="wbar"><div class="wfill ${fillCls}" style="width:${pct}%"></div></div>
+      <div class="ec-meta"><span>${projs.length} active</span><span style="color:${pct>=100?'#f55353':pct>=70?'#f5a623':'#444'}">${pct}% load</span></div>
+      <div class="ec-stats">
+        <div class="es"><strong style="color:${eng.color}">${projs.length}</strong>Active</div>
+        <div class="es"><strong style="color:var(--gr)">${done}</strong>Done</div>
+        <div class="es"><strong>${idrDone}</strong>IDR✓</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const tbody=document.getElementById('dash-table');
+  tbody.innerHTML=PROJECTS.filter(p=>p.status!=='Complete').slice(0,15).map(p=>{
+    const e=getEng(p.engineer);const pct=msPct(p.ms);
+    return `<tr>
+      <td><div class="pname">${p.name}</div><div class="pid">${p.id}</div></td>
+      <td><div style="display:flex;align-items:center;gap:5px">${av(e,22)}<span style="font-size:11.5px">${p.engineer}</span></div></td>
+      <td><span class="ttag">${p.type}</span></td>
+      <td><span class="vtag ${vcls(p.voltage)}">${vshort(p.voltage)}</span></td>
+      <td style="font-size:11px;color:var(--t2)">${p.pm} / ${p.sales}</td>
+      <td><div class="ms-row">${msBadges(p.ms)}</div></td>
+      <td><div class="pbar"><div class="ptrack"><div class="pfill" style="width:${pct}%"></div></div><span class="ppct">${pct}%</span></div></td>
+      <td>${spill(p.status)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ════ PROJECTS ════════════════════════════════════════════════════════════
+function populateFilters(){
+  const sel=document.getElementById('f-eng');
+  sel.innerHTML='<option value="">All Engineers</option>'+[...new Set(PROJECTS.map(p=>p.engineer))].map(n=>`<option>${n}</option>`).join('');
+}
+function renderProjects(){
+  const q=document.getElementById('s-proj').value.toLowerCase();
+  const fEng=document.getElementById('f-eng').value;
+  const fType=document.getElementById('f-type').value;
+  const fVolt=document.getElementById('f-volt').value;
+  const fStat=document.getElementById('f-stat').value;
+  const fMs=document.getElementById('f-ms').value;
+  let list=PROJECTS.filter(p=>{
+    if(fEng&&p.engineer!==fEng)return false;
+    if(fType&&p.type!==fType)return false;
+    if(fVolt&&p.voltage!==fVolt)return false;
+    if(fStat&&p.status!==fStat)return false;
+    if(fMs==='idr_pending'&&(p.ms.idr||p.status==='Complete'))return false;
+    if(fMs==='ifa_done'&&!p.ms.ifa)return false;
+    if(fMs==='ifc_done'&&!p.ms.ifc)return false;
+    if(fMs==='live'&&!p.ms.live)return false;
+    if(q&&!p.name.toLowerCase().includes(q)&&!p.id.toLowerCase().includes(q)&&!p.engineer.toLowerCase().includes(q))return false;
+    return true;
+  });
+  const tbody=document.getElementById('proj-table');
+  if(!list.length){tbody.innerHTML='<tr><td colspan="13" class="empty">No projects match filters</td></tr>';return;}
+  tbody.innerHTML=list.map(p=>{
+    const e=getEng(p.engineer);const pct=msPct(p.ms);
+    return `<tr>
+      <td class="pid">${p.id}</td>
+      <td class="pname">${p.name}</td>
+      <td><div style="display:flex;align-items:center;gap:5px">${av(e,20)}<span style="font-size:11px">${p.engineer}</span></div></td>
+      <td><span class="ttag">${p.type}</span></td>
+      <td><span class="vtag ${vcls(p.voltage)}">${vshort(p.voltage)}</span></td>
+      <td style="font-size:11px">${p.pm}</td>
+      <td style="font-size:11px">${p.sales}</td>
+      <td style="font-size:10.5px;color:var(--t2)">${fmt(p.start)}</td>
+      <td style="font-size:10.5px;color:var(--t2)">${fmt(p.end)}</td>
+      <td><div class="ms-row">${msBadges(p.ms)}</div></td>
+      <td><div class="pbar"><div class="ptrack"><div class="pfill" style="width:${pct}%"></div></div><span class="ppct">${pct}%</span></div></td>
+      <td>${spill(p.status)}</td>
+      <td><button class="btn btn-gh btn-sm" onclick="openEditModal('${p.id}')">Edit</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ════ GANTT ════════════════════════════════════════════════════════════
+function populateGanttFilters(){
+  const sel=document.getElementById('g-eng');
+  sel.innerHTML='<option value="">All Engineers</option>'+[...new Set(PROJECTS.map(p=>p.engineer))].map(n=>`<option>${n}</option>`).join('');
+}
+function renderGantt(){
+  const fEng=document.getElementById('g-eng').value;
+  const fType=document.getElementById('g-type').value;
+  const fStat=document.getElementById('g-stat').value;
+  let list=PROJECTS.filter(p=>{
+    if(fEng&&p.engineer!==fEng)return false;
+    if(fType&&p.type!==fType)return false;
+    if(fStat&&p.status!==fStat)return false;
+    return true;
+  }).slice(0,20);
+  const today=new Date();
+  const startM=0,endM=11,numM=12;
+  const todayPct=((today.getMonth()-startM)+today.getDate()/31)/numM;
+  const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  let html=`<div class="g-hrow"><div class="g-lbl-hd">Project / Engineer</div><div class="g-months">${MONTHS.map((m,i)=>`<div class="g-month ${i===today.getMonth()?'cur':''}">${m}</div>`).join('')}</div></div>`;
+  if(!list.length){html+='<div class="empty">No projects to show</div>';}
+  else{
+    list.forEach(p=>{
+      const e=getEng(p.engineer);
+      const ps=new Date(p.start+'T00:00'),pe=new Date(p.end+'T00:00');
+      const sp=Math.max(0,(ps.getMonth()-startM+ps.getDate()/31)/numM)*100;
+      const ep=Math.min(100,(pe.getMonth()-startM+pe.getDate()/31)/numM)*100;
+      const w=Math.max(ep-sp,1.5);
+      const pct=msPct(p.ms);
+      const bc=p.engineer==='BNB Team'?'rgba(169,109,247,.25)':pct===100?'rgba(34,212,122,.2)':pct>=50?'rgba(41,171,226,.2)':'rgba(245,166,35,.18)';
+      const tc=p.engineer==='BNB Team'?'#a96df7':pct===100?'#22d47a':pct>=50?'#29ABE2':'#f5a623';
+      const msDots=[{k:'design',pos:0.15,done:p.ms.design},{k:'ifa',pos:0.35,done:p.ms.ifa},{k:'ifc',pos:0.6,done:p.ms.ifc},{k:'idr',pos:0.75,done:p.ms.idr},{k:'live',pos:0.95,done:p.ms.live}];
+      const dots=msDots.filter(m=>m.done).map(m=>{
+        const mlp=sp+(ep-sp)*m.pos;
+        return `<div class="g-dot" style="left:${mlp}%;background:#22d47a;border-radius:50%" title="${m.k.toUpperCase()} complete"></div>`;
+      }).join('');
+      html+=`<div class="g-row">
+        <div class="g-lbl" style="border-left:2px solid ${e.color}">
+          <div class="g-lbl-name">${p.name}</div>
+          <div class="g-lbl-meta">${p.engineer} · ${p.type}</div>
+        </div>
+        <div class="g-track">
+          <div class="today-line" style="left:${todayPct*100}%"></div>
+          <div class="g-bar" style="left:${sp}%;width:${w}%;background:${bc};color:${tc};border-color:${tc}44">${pct}%</div>
+          ${dots}
+        </div>
+      </div>`;
+    });
+  }
+  html+=`<div class="g-legend">
+    <span class="gl-item"><span style="width:22px;height:2px;background:rgba(41,171,226,.6);display:inline-block"></span>In Progress</span>
+    <span class="gl-item"><span style="width:22px;height:2px;background:rgba(34,212,122,.6);display:inline-block"></span>Complete</span>
+    <span class="gl-item"><span style="width:22px;height:2px;background:rgba(245,166,35,.5);display:inline-block"></span>&lt;50% done</span>
+    <span class="gl-item"><span style="width:22px;height:2px;background:rgba(169,109,247,.5);display:inline-block"></span>BNB</span>
+    <span class="gl-item"><span style="width:1.5px;height:12px;background:var(--spike);display:inline-block"></span>Today</span>
+    <span class="gl-item"><span style="width:7px;height:7px;border-radius:50%;background:#22d47a;display:inline-block"></span>Milestone done</span>
+  </div>`;
+  document.getElementById('gantt-container').innerHTML=html;
+}
+
+// ════ CALENDAR ════════════════════════════════════════════════════════════
+let calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
+const MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
+function calStep(dir){calMonth+=dir;if(calMonth>11){calMonth=0;calYear++;}else if(calMonth<0){calMonth=11;calYear--;}renderCalendar();}
+function calToday(){calYear=new Date().getFullYear();calMonth=new Date().getMonth();renderCalendar();}
+function populateCalFilters(){
+  const sel=document.getElementById('cal-eng');
+  sel.innerHTML='<option value="">All Engineers</option>'+[...new Set(PROJECTS.map(p=>p.engineer))].map(n=>`<option>${n}</option>`).join('');
+}
+function buildCalEvents(projects){
+  const map={};
+  const addEv=(ds,ev)=>{if(!ds)return;if(!map[ds])map[ds]=[];map[ds].push(ev);};
+  projects.forEach(p=>{
+    const e=getEng(p.engineer);
+    const isBnb=p.engineer==='BNB Team';
+    if(p.start) addEv(p.start,{type:'start',label:`▶ ${p.name}`,color:e.color,proj:p});
+    if(p.end)   addEv(p.end,  {type:'end',  label:`◼ ${p.name}`,color:'#f55353',proj:p});
+    if(p.start&&p.end){
+      const s=new Date(p.start+'T00:00'),en=new Date(p.end+'T00:00');
+      const cur=new Date(calYear,calMonth,1),last=new Date(calYear,calMonth+1,0);
+      let d=new Date(Math.max(s.getTime(),cur.getTime()));let limit=0;
+      while(d<=en&&d<=last&&limit<32){
+        const ds=d.toISOString().split('T')[0];
+        const already=(map[ds]||[]).some(ev=>ev.proj?.id===p.id&&(ev.type==='start'||ev.type==='end'));
+        if(!already) addEv(ds,{type:'active',label:p.name,color:isBnb?'#a96df7':e.color,proj:p});
+        d.setDate(d.getDate()+1);limit++;
+      }
+    }
+    if(!p.ms.idr&&p.start&&p.end&&p.status!=='Complete'){
+      const s=new Date(p.start+'T00:00'),en=new Date(p.end+'T00:00');
+      const idrDate=new Date(s.getTime()+(en.getTime()-s.getTime())*0.75);
+      addEv(idrDate.toISOString().split('T')[0],{type:'idr',label:`IDR: ${p.name}`,color:'#a96df7',proj:p});
+    }
+  });
+  return map;
+}
+function renderCalendar(){
+  const fEng=document.getElementById('cal-eng').value;
+  const fType=document.getElementById('cal-type').value;
+  let projs=PROJECTS.filter(p=>{if(fEng&&p.engineer!==fEng)return false;if(fType&&p.type!==fType)return false;return true;});
+  const mStart=new Date(calYear,calMonth,1),mEnd=new Date(calYear,calMonth+1,0);
+  const activeCount=projs.filter(p=>{if(!p.start||!p.end)return false;const s=new Date(p.start+'T00:00'),e=new Date(p.end+'T00:00');return s<=mEnd&&e>=mStart;}).length;
+  document.getElementById('cal-title').textContent=MONTH_NAMES[calMonth]+' '+calYear;
+  document.getElementById('cal-subtitle').textContent=`${activeCount} project${activeCount!==1?'s':''} active this month`;
+  const evMap=buildCalEvents(projs);
+  const today=new Date(),todayStr=today.toISOString().split('T')[0];
+  const firstDay=new Date(calYear,calMonth,1).getDay();
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  const daysInPrevMonth=new Date(calYear,calMonth,0).getDate();
+  const ORDER={start:0,end:1,idr:2,active:3};
+  let html=`<div class="cal-dow">Sun</div><div class="cal-dow">Mon</div><div class="cal-dow">Tue</div><div class="cal-dow">Wed</div><div class="cal-dow">Thu</div><div class="cal-dow">Fri</div><div class="cal-dow">Sat</div>`;
+  let total=0;
+  for(let i=0;i<firstDay;i++){
+    html+=`<div class="cal-cell other-month ${(i===0||i===6)?'weekend':''}"><div class="cal-day-num">${daysInPrevMonth-firstDay+1+i}</div></div>`;total++;
+  }
+  for(let d=1;d<=daysInMonth;d++){
+    const mm=String(calMonth+1).padStart(2,'0'),dd=String(d).padStart(2,'0'),ds=`${calYear}-${mm}-${dd}`;
+    const dow=(firstDay+d-1)%7,isWknd=(dow===0||dow===6),isToday=ds===todayStr;
+    const events=(evMap[ds]||[]).sort((a,b)=>(ORDER[a.type]||9)-(ORDER[b.type]||9));
+    const visible=events.slice(0,3),hidden=events.length-3;
+    const evHtml=visible.map(ev=>{
+      const cls=ev.type==='start'?'ev-start':ev.type==='end'?'ev-end':ev.type==='idr'?'ev-idr':'ev-active';
+      return `<div class="cal-event ${cls}" style="border-left-color:${ev.color}" onclick="openDayPopup('${ds}',event)">${ev.label}</div>`;
+    }).join('');
+    html+=`<div class="cal-cell ${isToday?'today':''} ${isWknd?'weekend':''}" data-date="${ds}">
+      <div class="cal-day-num">${d}</div>${evHtml}${hidden>0?`<div class="cal-more" onclick="openDayPopup('${ds}',event)">+${hidden} more</div>`:''}
+    </div>`;total++;
+  }
+  const rem=(7-(total%7))%7;
+  for(let i=1;i<=rem;i++){const dow=total%7;html+=`<div class="cal-cell other-month ${(dow===0||dow===6)?'weekend':''}"><div class="cal-day-num">${i}</div></div>`;total++;}
+  document.getElementById('cal-grid').innerHTML=`<div class="cal-dow">Sun</div><div class="cal-dow">Mon</div><div class="cal-dow">Tue</div><div class="cal-dow">Wed</div><div class="cal-dow">Thu</div><div class="cal-dow">Fri</div><div class="cal-dow">Sat</div>`+html.replace(/<div class="cal-dow">[^<]*<\/div>/g,'');
+}
+function openDayPopup(dateStr,evt){
+  evt.stopPropagation();
+  const fEng=document.getElementById('cal-eng').value;
+  const fType=document.getElementById('cal-type').value;
+  let projs=PROJECTS.filter(p=>{if(fEng&&p.engineer!==fEng)return false;if(fType&&p.type!==fType)return false;return true;});
+  const evMap=buildCalEvents(projs);
+  const events=evMap[dateStr]||[];
+  const d=new Date(dateStr+'T00:00');
+  document.getElementById('dp-title').textContent=d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+  if(!events.length){document.getElementById('dp-events').innerHTML='<div style="color:var(--t3);font-size:11px;padding:8px 0;text-transform:uppercase;letter-spacing:.5px">No activity this day.</div>';return;}
+  const seen=new Set();
+  const unique=events.filter(ev=>{const k=(ev.proj?.id||'?')+ev.type;if(seen.has(k))return false;seen.add(k);return true;});
+  document.getElementById('dp-events').innerHTML=unique.map(ev=>{
+    const typeLabel=ev.type==='start'?'Starts today':ev.type==='end'?'Target end':ev.type==='idr'?'IDR due':ev.type==='active'?'In progress':'Event';
+    return `<div class="dp-event"><div class="dp-ev-dot" style="background:${ev.color}"></div><div><div class="dp-ev-name">${ev.proj?.name||ev.label}</div><div class="dp-ev-meta">${ev.proj?.engineer||''} · ${ev.proj?.type||''}</div><div class="dp-ev-meta" style="color:${ev.color};margin-top:2px">${typeLabel}</div></div></div>`;
+  }).join('');
+  const popup=document.getElementById('day-popup');
+  popup.classList.add('open');
+  const x=Math.min(evt.clientX+10,window.innerWidth-320),y=Math.min(evt.clientY+10,window.innerHeight-380);
+  popup.style.left=x+'px';popup.style.top=y+'px';
+}
+function closeDayPopup(){document.getElementById('day-popup').classList.remove('open');}
+document.addEventListener('click',e=>{const p=document.getElementById('day-popup');if(p.classList.contains('open')&&!p.contains(e.target))closeDayPopup();});
+
+// ════ KPI ════════════════════════════════════════════════════════════════
+function renderKPI(){
+  document.getElementById('k-ytd').textContent=PROJECTS.length;
+  const bnbPct=Math.round(PROJECTS.filter(p=>p.engineer==='BNB Team').length/PROJECTS.length*100);
+  document.getElementById('k-bnbpct').innerHTML=bnbPct+'<span>%</span>';
+  destroyChart('cMonthly');
+  charts.cMonthly=new Chart(document.getElementById('cMonthly'),{type:'bar',data:{labels:['Oct','Nov','Dec','Jan','Feb','Mar'],datasets:[{label:'Completed',data:[2,3,4,3,2,1],backgroundColor:'rgba(41,171,226,.25)',borderColor:'#29ABE2',borderWidth:1.5,borderRadius:2,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{color:'#444',font:{size:9}},grid:{color:'rgba(255,255,255,.04)'},beginAtZero:true},x:{ticks:{color:'#444',font:{size:9}},grid:{display:false}}}}});
+  destroyChart('cCycle');
+  charts.cCycle=new Chart(document.getElementById('cCycle'),{type:'bar',data:{labels:['Switchrack','Switchgear','MCC','Transformer','Panel','Bus Duct','Load Ctr'],datasets:[{label:'Design',data:[3.2,4.1,5.0,2.5,1.8,2.2,1.5],backgroundColor:'rgba(41,171,226,.25)',borderColor:'#29ABE2',borderWidth:1.5,borderRadius:2,borderSkipped:false},{label:'Total',data:[8.5,11.2,14.0,6.8,4.2,5.5,3.8],backgroundColor:'rgba(34,212,122,.15)',borderColor:'#22d47a',borderWidth:1.5,borderRadius:2,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#666',font:{size:9},boxWidth:8}}},scales:{y:{ticks:{color:'#444',font:{size:9},callback:v=>v+'w'},grid:{color:'rgba(255,255,255,.04)'},beginAtZero:true},x:{ticks:{color:'#444',font:{size:8.5}},grid:{display:false}}}}});
+  const nonBnb=ENGINEERS.filter(e=>!e.isBnb);
+  destroyChart('cThroughput');
+  charts.cThroughput=new Chart(document.getElementById('cThroughput'),{type:'bar',data:{labels:nonBnb.map(e=>e.name.split('.')[1]?.trim()||e.name),datasets:[{data:nonBnb.map(e=>PROJECTS.filter(p=>p.engineer===e.name&&p.status==='Complete').length),backgroundColor:nonBnb.map(e=>e.color+'33'),borderColor:nonBnb.map(e=>e.color),borderWidth:1.5,borderRadius:2,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{color:'#444',font:{size:9}},grid:{color:'rgba(255,255,255,.04)'},beginAtZero:true},x:{ticks:{color:'#444',font:{size:9}},grid:{display:false}}}}});
+  const active=PROJECTS.filter(p=>p.status!=='Complete');
+  const msKeys=['design','ifa','ifc','adj','idr','live'],msLabels=['Design','IFA','IFC','ADJ','IDR','Live'];
+  const msVals=msKeys.map(k=>Math.round(active.filter(p=>p.ms[k]).length/active.length*100));
+  const msColors=['#29ABE2','#14c4b2','#a96df7','#f5a623','#22d47a','#f55353'];
+  destroyChart('cMsHealth');
+  charts.cMsHealth=new Chart(document.getElementById('cMsHealth'),{type:'bar',data:{labels:msLabels,datasets:[{data:msVals,backgroundColor:msColors.map(c=>c+'33'),borderColor:msColors,borderWidth:1.5,borderRadius:2,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#444',font:{size:9},callback:v=>v+'%'},grid:{color:'rgba(255,255,255,.04)'},max:100},y:{ticks:{color:'#444',font:{size:9}},grid:{display:false}}}}});
+}
+
+// ════ BNB ════════════════════════════════════════════════════════════════
+function renderBNB(){
+  const bnb=PROJECTS.filter(p=>p.engineer==='BNB Team');
+  document.getElementById('bnb-active').textContent=bnb.filter(p=>p.status!=='Complete').length;
+  const avg=bnb.length?Math.round(bnb.reduce((a,p)=>a+msPct(p.ms),0)/bnb.length):0;
+  document.getElementById('bnb-prog').textContent=avg+'%';
+  document.getElementById('bnb-idrp').textContent=bnb.filter(p=>!p.ms.idr&&p.status!=='Complete').length;
+  document.getElementById('bnb-hold').textContent=bnb.filter(p=>p.status==='On Hold').length;
+  document.getElementById('bnb-table').innerHTML=bnb.map(p=>{const pct=msPct(p.ms);return`<tr>
+    <td><div class="pname">${p.name}</div><div class="pid">${p.id}</div></td>
+    <td><span class="ttag">${p.type}</span></td>
+    <td><span class="vtag ${vcls(p.voltage)}">${vshort(p.voltage)}</span></td>
+    <td style="font-size:11px;color:var(--t2)">${p.pm} / ${p.sales}</td>
+    <td style="font-size:11px;color:var(--t3)">Internal oversight</td>
+    <td><div class="ms-row">${msBadges(p.ms)}</div></td>
+    <td><div class="pbar"><div class="ptrack"><div class="pfill" style="width:${pct}%;background:var(--pu)"></div></div><span class="ppct" style="color:var(--pu)">${pct}%</span></div></td>
+    <td>${spill(p.status)}</td>
+    <td><button class="btn btn-gh btn-sm" onclick="openEditModal('${p.id}')">Edit</button></td>
+  </tr>`;}).join('');
+}
+
+// ════ ENGINEER DETAIL ════════════════════════════════════════════════════
+function viewEngineer(name,el){
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
+  if(el) el.classList.add('active');
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-engineer').classList.add('active');
+  document.getElementById('page-title').textContent=name;
+  document.getElementById('boss-tag').style.display='none';
+  const eng=getEng(name);
+  const projs=PROJECTS.filter(p=>p.engineer===name);
+  const active=projs.filter(p=>p.status!=='Complete');
+  const done=projs.filter(p=>p.status==='Complete');
+  const pct=active.length?Math.round(active.reduce((a,p)=>a+msPct(p.ms),0)/active.length):0;
+  document.getElementById('eng-view-content').innerHTML=`
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;padding:14px;background:var(--s2);border:1px solid var(--b1);border-top:2px solid ${eng.color}">
+      ${av(eng,48)}
+      <div>
+        <div style="font-family:var(--fh);font-size:20px;font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:-.5px">${name}</div>
+        <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.8px">${eng.role}</div>
+      </div>
+      <div style="display:flex;gap:24px;margin-left:28px">
+        <div style="text-align:center"><div style="font-family:var(--fh);font-size:26px;font-weight:900;font-style:italic;color:${eng.color};letter-spacing:-1px">${active.length}</div><div style="font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-top:2px">Active</div></div>
+        <div style="text-align:center"><div style="font-family:var(--fh);font-size:26px;font-weight:900;font-style:italic;color:var(--gr);letter-spacing:-1px">${done.length}</div><div style="font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-top:2px">Done</div></div>
+        <div style="text-align:center"><div style="font-family:var(--fh);font-size:26px;font-weight:900;font-style:italic;letter-spacing:-1px">${pct}%</div><div style="font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-top:2px">Avg</div></div>
+        <div style="text-align:center"><div style="font-family:var(--fh);font-size:26px;font-weight:900;font-style:italic;color:var(--am);letter-spacing:-1px">${active.filter(p=>!p.ms.idr).length}</div><div style="font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-top:2px">IDR Due</div></div>
+      </div>
+    </div>
+    <div class="tw"><table><thead><tr><th>ID</th><th>Project</th><th>Type</th><th>Voltage</th><th>PM / Sales</th><th>Target</th><th>Milestones</th><th>Progress</th><th>Status</th><th></th></tr></thead>
+    <tbody>${projs.map(p=>{const pc=msPct(p.ms);return`<tr>
+      <td class="pid">${p.id}</td><td class="pname">${p.name}</td>
+      <td><span class="ttag">${p.type}</span></td>
+      <td><span class="vtag ${vcls(p.voltage)}">${vshort(p.voltage)}</span></td>
+      <td style="font-size:11px;color:var(--t2)">${p.pm} / ${p.sales}</td>
+      <td style="font-size:10.5px;color:var(--t2)">${fmt(p.end)}</td>
+      <td><div class="ms-row">${msBadges(p.ms)}</div></td>
+      <td><div class="pbar"><div class="ptrack"><div class="pfill" style="width:${pc}%"></div></div><span class="ppct">${pc}%</span></div></td>
+      <td>${spill(p.status)}</td>
+      <td><button class="btn btn-gh btn-sm" onclick="openEditModal('${p.id}')">Edit</button></td>
+    </tr>`;}).join('')}</tbody></table></div>`;
+}
+
+// ════ MODAL ═══════════════════════════════════════════════════════════════
+let editingId=null;
+function populateModalEngSelect(){document.getElementById('f-engineer').innerHTML='<option value="">Select engineer…</option>'+ENGINEERS.map(e=>`<option value="${e.name}">${e.name}</option>`).join('');}
+function openModal(){
+  editingId=null;
+  document.getElementById('modal-title').textContent='Add New Project';
+  document.getElementById('f-id').value='P-'+String(PROJECTS.length+1).padStart(3,'0');
+  ['f-name','f-desc','f-pm','f-sales','f-end'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-engineer').value='';document.getElementById('f-type-m').value='';document.getElementById('f-voltage').value='';
+  document.getElementById('f-start').value=new Date().toISOString().split('T')[0];
+  document.querySelectorAll('.msc').forEach(m=>{m.classList.remove('on');m.querySelector('input').checked=false;m.querySelector('.msc-dot').textContent='';});
+  populateModalEngSelect();
+  document.getElementById('add-modal').classList.add('open');
+}
+function openEditModal(id){
+  const p=PROJECTS.find(x=>x.id===id);if(!p)return;
+  editingId=id;populateModalEngSelect();
+  document.getElementById('modal-title').textContent='Edit Project';
+  document.getElementById('f-id').value=p.id;document.getElementById('f-name').value=p.name;document.getElementById('f-desc').value=p.desc||'';
+  document.getElementById('f-engineer').value=p.engineer;document.getElementById('f-type-m').value=p.type;document.getElementById('f-voltage').value=p.voltage;
+  document.getElementById('f-pm').value=p.pm;document.getElementById('f-sales').value=p.sales;document.getElementById('f-start').value=p.start;document.getElementById('f-end').value=p.end;
+  const msc={design:'mc-design',ifa:'mc-ifa',ifc:'mc-ifc',adj:'mc-adj',idr:'mc-idr',live:'mc-live'};
+  Object.entries(msc).forEach(([k,elid])=>{const el=document.getElementById(elid);const inp=el.querySelector('input');const dot=el.querySelector('.msc-dot');inp.checked=p.ms[k];el.classList.toggle('on',p.ms[k]);dot.textContent=p.ms[k]?'✓':'';});
+  document.getElementById('add-modal').classList.add('open');
+}
+function closeModal(){document.getElementById('add-modal').classList.remove('open');}
+document.querySelectorAll('.msc').forEach(label=>{label.addEventListener('click',()=>{const inp=label.querySelector('input');inp.checked=!inp.checked;label.classList.toggle('on',inp.checked);label.querySelector('.msc-dot').textContent=inp.checked?'✓':'';});});
+function saveProject(){
+  const name=document.getElementById('f-name').value.trim();
+  const engineer=document.getElementById('f-engineer').value;
+  const type=document.getElementById('f-type-m').value;
+  const voltage=document.getElementById('f-voltage').value;
+  if(!name||!engineer||!type||!voltage){alert('Please fill in Name, Engineer, Type and Voltage');return;}
+  const ms={design:document.getElementById('mc-design').querySelector('input').checked,ifa:document.getElementById('mc-ifa').querySelector('input').checked,ifc:document.getElementById('mc-ifc').querySelector('input').checked,adj:document.getElementById('mc-adj').querySelector('input').checked,idr:document.getElementById('mc-idr').querySelector('input').checked,live:document.getElementById('mc-live').querySelector('input').checked};
+  const proj={id:document.getElementById('f-id').value||'P-'+Date.now(),name,desc:document.getElementById('f-desc').value,engineer,type,voltage,pm:document.getElementById('f-pm').value||'TBD',sales:document.getElementById('f-sales').value||'TBD',status:ms.live?'Complete':'In Progress',start:document.getElementById('f-start').value,end:document.getElementById('f-end').value,ms};
+  if(editingId){const idx=PROJECTS.findIndex(p=>p.id===editingId);if(idx>=0)PROJECTS[idx]={...PROJECTS[idx],...proj};}
+  else PROJECTS.push(proj);
+  closeModal();renderDashboard();
+  const av2=document.querySelector('.view.active');
+  if(av2?.id==='view-projects') renderProjects();
+  if(av2?.id==='view-gantt') renderGantt();
+  if(av2?.id==='view-bnb') renderBNB();
+  showToast('✅ Project saved');
+}
+
+// ════ EXPORT ══════════════════════════════════════════════════════════════
+function exportCSV(){
+  const h=['ID','Project Name','Engineer','Type','Voltage','PM','Sales','Status','Start','End','Progress%','Design','IFA','IFC','ADJ','IDR','Live'];
+  const rows=PROJECTS.map(p=>[p.id,`"${p.name}"`,p.engineer,p.type,p.voltage,p.pm,p.sales,p.status,p.start,p.end,msPct(p.ms),+p.ms.design,+p.ms.ifa,+p.ms.ifc,+p.ms.adj,+p.ms.idr,+p.ms.live]);
+  const csv=[h,...rows].map(r=>r.join(',')).join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='spike-projects-'+new Date().toISOString().split('T')[0]+'.csv';a.click();
+}
+
+// ════ SUPABASE CONFIG ═════════════════════════════════════════════════════
+const SUPABASE_URL='YOUR_SUPABASE_URL';
+const SUPABASE_KEY='YOUR_SUPABASE_ANON_KEY';
+let supabase=null,currentUser=null,realtimeChannel=null;
+async function initSupabase(){await loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js');supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);}
+function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
+async function doLogin(){const email=document.getElementById('login-email').value.trim(),pass=document.getElementById('login-pass').value;if(!email||!pass){showLoginError('Please enter email and password.');return;}setLoginLoading(true);const{data,error}=await supabase.auth.signInWithPassword({email,password:pass});setLoginLoading(false);if(error){showLoginError(error.message);return;}currentUser=data.user;enterApp();}
+async function doSignup(){const email=document.getElementById('login-email').value.trim(),pass=document.getElementById('login-pass').value,name=document.getElementById('login-name').value.trim();if(!email||!pass||!name){showLoginError('Please fill in all fields.');return;}setLoginLoading(true);const{data,error}=await supabase.auth.signUp({email,password:pass,options:{data:{full_name:name}}});setLoginLoading(false);if(error){showLoginError(error.message);return;}showLoginError('✅ Check your email to confirm your account.',true);}
+async function doLogout(){if(supabase)await supabase.auth.signOut();currentUser=null;if(realtimeChannel&&supabase)supabase.removeChannel(realtimeChannel);document.getElementById('app-shell').style.display='none';document.getElementById('login-screen').style.display='flex';}
+function showLoginError(msg,ok=false){const el=document.getElementById('login-error');el.textContent=msg;el.style.borderLeftColor=ok?'var(--gr)':'var(--rd)';el.style.display='block';}
+function setLoginLoading(on){document.getElementById('login-btn').textContent=on?'Signing in…':'Sign In';document.getElementById('login-btn').disabled=on;}
+function toggleSignup(){const su=document.getElementById('signup-fields');const showing=su.style.display!=='none';su.style.display=showing?'none':'block';document.getElementById('login-btn').textContent=showing?'Sign In':'Sign Up';document.getElementById('login-btn').onclick=showing?doLogin:doSignup;document.getElementById('toggle-signup').textContent=showing?'No account? Sign up':'Already have an account? Sign in';document.getElementById('login-error').style.display='none';}
+async function loadProjects(){showAppLoading(true);const{data,error}=await supabase.from('projects').select('*').order('created_at',{ascending:false});showAppLoading(false);if(error){console.error(error);return;}PROJECTS=data.map(dbToProj);refreshAllViews();}
+function dbToProj(row){return{id:row.proj_id,name:row.name,desc:row.description||'',engineer:row.engineer,type:row.type,voltage:row.voltage,pm:row.pm,sales:row.sales,status:row.status,start:row.start_date,end:row.end_date,ms:{design:row.ms_design||false,ifa:row.ms_ifa||false,ifc:row.ms_ifc||false,adj:row.ms_adj||false,idr:row.ms_idr||false,live:row.ms_live||false},_dbid:row.id};}
+function projToDb(proj){return{proj_id:proj.id,name:proj.name,description:proj.desc||'',engineer:proj.engineer,type:proj.type,voltage:proj.voltage,pm:proj.pm,sales:proj.sales,status:proj.status,start_date:proj.start||null,end_date:proj.end||null,ms_design:proj.ms.design,ms_ifa:proj.ms.ifa,ms_ifc:proj.ms.ifc,ms_adj:proj.ms.adj,ms_idr:proj.ms.idr,ms_live:proj.ms.live,updated_by:currentUser?.email||'unknown'};}
+function subscribeRealtime(){realtimeChannel=supabase.channel('projects-changes').on('postgres_changes',{event:'*',schema:'public',table:'projects'},()=>{loadProjects();showToast('⚡ Updated by team member');}).subscribe();}
+function showAppLoading(on){document.getElementById('app-loading').style.display=on?'flex':'none';}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
+function refreshAllViews(){buildEngNav();renderDashboard();populateCalFilters();document.getElementById('last-update').textContent=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});}
+async function enterApp(){document.getElementById('login-screen').style.display='none';document.getElementById('app-shell').style.display='flex';document.getElementById('user-display').textContent=currentUser.user_metadata?.full_name||currentUser.email;await loadProjects();subscribeRealtime();}
+async function saveProject(){
+  const name=document.getElementById('f-name').value.trim(),engineer=document.getElementById('f-engineer').value,type=document.getElementById('f-type-m').value,voltage=document.getElementById('f-voltage').value;
+  if(!name||!engineer||!type||!voltage){alert('Please fill in Name, Engineer, Type and Voltage');return;}
+  const ms={design:document.getElementById('mc-design').querySelector('input').checked,ifa:document.getElementById('mc-ifa').querySelector('input').checked,ifc:document.getElementById('mc-ifc').querySelector('input').checked,adj:document.getElementById('mc-adj').querySelector('input').checked,idr:document.getElementById('mc-idr').querySelector('input').checked,live:document.getElementById('mc-live').querySelector('input').checked};
+  const proj={id:document.getElementById('f-id').value||'P-'+Date.now(),name,desc:document.getElementById('f-desc').value,engineer,type,voltage,pm:document.getElementById('f-pm').value||'TBD',sales:document.getElementById('f-sales').value||'TBD',status:ms.live?'Complete':'In Progress',start:document.getElementById('f-start').value||null,end:document.getElementById('f-end').value||null,ms};
+  if(!supabase){if(editingId){const idx=PROJECTS.findIndex(p=>p.id===editingId);if(idx>=0)PROJECTS[idx]={...PROJECTS[idx],...proj};}else PROJECTS.push(proj);closeModal();renderDashboard();showToast('✅ Project saved (demo)');return;}
+  const dbRow=projToDb(proj);let error;
+  if(editingId){const existing=PROJECTS.find(p=>p.id===editingId);if(existing?._dbid)({error}=await supabase.from('projects').update(dbRow).eq('id',existing._dbid));}
+  else({error}=await supabase.from('projects').insert([dbRow]));
+  if(error){alert('Save failed: '+error.message);return;}
+  closeModal();showToast('⚡ Project saved');
+}
+function demoMode(){document.getElementById('login-screen').style.display='none';document.getElementById('app-shell').style.display='flex';document.getElementById('user-display').textContent='Demo Mode';document.getElementById('demo-banner').style.display='flex';buildEngNav();renderDashboard();populateCalFilters();document.getElementById('last-update').textContent=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});}
+function setupInstructions(){alert('SUPABASE SETUP:\n1. supabase.com → New Project\n2. Copy Project URL + anon key\n3. Paste into SUPABASE_URL / SUPABASE_KEY\n4. Run the SQL setup file\n5. Upload to GitHub Pages');}
+
+// ════ INIT ════════════════════════════════════════════════════════════════
+(async()=>{
+  if(SUPABASE_URL==='YOUR_SUPABASE_URL'){
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app-shell').style.display='flex';
+    document.getElementById('user-display').textContent='Demo Mode';
+    document.getElementById('demo-banner').style.display='flex';
+    buildEngNav();renderDashboard();populateCalFilters();
+    document.getElementById('last-update').textContent=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+    return;
+  }
+  await initSupabase();
+  const{data:{session}}=await supabase.auth.getSession();
+  if(session){currentUser=session.user;enterApp();}
+  else document.getElementById('login-screen').style.display='flex';
+})();
+</script>
+</body>
+</html>
