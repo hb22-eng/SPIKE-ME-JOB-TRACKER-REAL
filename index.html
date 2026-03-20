@@ -453,8 +453,8 @@ tr:hover td{background:rgba(255,255,255,.018)}
 <script>
 // ══ CONFIG — EDIT THESE ═══════════════════════════════════════════════════
 const TEAM_PASSWORD = 'SPIKE2025';        // 🔧 your team password
-const SUPABASE_URL  = 'https://zxgueylsdhgpukivmako.supabase.co';    // 🔧 from Supabase settings
-const SUPABASE_KEY  = 'sb_publishable_mJf70t8g_JfhRf_9t-lU7Q_jSU5DFmZ'; // 🔧 from Supabase settings
+const SUPABASE_URL  = 'YOUR_SUPABASE_URL';    // 🔧 from Supabase settings
+const SUPABASE_KEY  = 'YOUR_SUPABASE_ANON_KEY'; // 🔧 from Supabase settings
 // ══════════════════════════════════════════════════════════════════════════
 
 const SESSION_KEY = 'spike_auth';
@@ -583,8 +583,22 @@ function subscribeRealtime(){
     .subscribe();
 }
 function refreshAll(){
-  buildEngNav();renderDashboard();populateCalFilters();
+  buildEngNav();
+  populateCalFilters();
+  populateGanttFilters();
+  populateFilters();
   document.getElementById('last-update').textContent=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+  // Re-render whichever view is currently active
+  const active=document.querySelector('.view.active');
+  if(!active) return;
+  const id=active.id;
+  if(id==='view-dashboard')    renderDashboard();
+  else if(id==='view-projects') renderProjects();
+  else if(id==='view-gantt')    renderGantt();
+  else if(id==='view-calendar') renderCalendar();
+  else if(id==='view-kpi')      renderKPI();
+  else if(id==='view-bnb')      renderBNB();
+  else                          renderDashboard();
 }
 
 // ── Views ─────────────────────────────────────────────────────────────────
@@ -596,7 +610,7 @@ function showView(name,el){
   const titles={dashboard:'Dashboard',kpi:'KPI Reports',projects:'All Projects',gantt:'Gantt Timeline',bnb:'BNB Team',engineer:'Engineer View',calendar:'Monthly Calendar'};
   document.getElementById('page-title').textContent=titles[name]||name;
   document.getElementById('boss-tag').style.display=name==='dashboard'?'':'none';
-  const renders={dashboard:renderDashboard,projects:()=>{populateFilters();renderProjects()},gantt:()=>{populateGanttFilters();renderGantt()},calendar:()=>{populateCalFilters();renderCalendar()},kpi:renderKPI,bnb:renderBNB};
+  const renders={dashboard:renderDashboard,projects:()=>{populateFilters();renderProjects()},gantt:()=>{populateGanttFilters();renderGantt()},calendar:()=>{populateCalFilters();calYear=calYear||new Date().getFullYear();calMonth=calMonth!==undefined?calMonth:new Date().getMonth();renderCalendar()},kpi:renderKPI,bnb:renderBNB};
   if(renders[name])renders[name]();
 }
 
