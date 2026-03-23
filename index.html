@@ -471,8 +471,8 @@ tr:hover td{background:rgba(255,255,255,.018)}
 <script>
 // ══ CONFIG — EDIT THESE ═══════════════════════════════════════════════════
 const TEAM_PASSWORD = 'SPIKE2025';        // 🔧 your team password
-const SUPABASE_URL  = 'https://zxgueylsdhgpukivmako.supabase.co';    // 🔧 from Supabase settings
-const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4Z3VleWxzZGhncHVraXZtYWtvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5MzU3MTQsImV4cCI6MjA4OTUxMTcxNH0.dnFA7MkE5nJ-hvl9k0EeJY3J-ExUadhgs3_F2ksO3Jk'; // 🔧 from Supabase settings
+const SUPABASE_URL  = 'YOUR_SUPABASE_URL';    // 🔧 from Supabase settings
+const SUPABASE_KEY  = 'YOUR_SUPABASE_ANON_KEY'; // 🔧 from Supabase settings
 // ══════════════════════════════════════════════════════════════════════════
 
 const SESSION_KEY = 'spike_auth';
@@ -595,9 +595,11 @@ async function loadFromDB(){
     });
   }
   // Load people from DB
-  if(!peopleRes.error && peopleRes.data && peopleRes.data.length>0){
-    PM_LIST=['TBD',...peopleRes.data.filter(r=>r.role==='pm').map(r=>r.name)];
-    SALES_LIST=['TBD',...peopleRes.data.filter(r=>r.role==='sales').map(r=>r.name)];
+  if(!peopleRes.error && peopleRes.data){
+    const dbPMs = peopleRes.data.filter(r=>r.role==='pm').map(r=>({name:r.name,role:'pm',_dbid:r.id}));
+    const dbSales = peopleRes.data.filter(r=>r.role==='sales').map(r=>({name:r.name,role:'sales',_dbid:r.id}));
+    PM_LIST = [{name:'TBD',role:'pm',_dbid:null}, ...dbPMs];
+    SALES_LIST = [{name:'TBD',role:'sales',_dbid:null}, ...dbSales];
   }
   refreshAll();
 }
@@ -1030,21 +1032,31 @@ function viewEngineer(name,el){
 }
 
 // ── People (PM & Sales) ───────────────────────────────────────────────────
-let PM_LIST = JSON.parse(localStorage.getItem('spike_pms') || '["TBD"]');
-let SALES_LIST = JSON.parse(localStorage.getItem('spike_sales') || '["TBD"]');
+// Each entry: {name, role, _dbid} — _dbid is the Supabase row id when connected
+let PM_LIST = [];
+let SALES_LIST = [];
 let peopleModalType = 'pm';
 
+function loadPeopleLocal(){
+  const pms = JSON.parse(localStorage.getItem('spike_pms') || '[]');
+  const sales = JSON.parse(localStorage.getItem('spike_sales') || '[]');
+  // Support old plain-string format
+  PM_LIST = pms.map(x => typeof x==='string' ? {name:x,role:'pm',_dbid:null} : x);
+  SALES_LIST = sales.map(x => typeof x==='string' ? {name:x,role:'sales',_dbid:null} : x);
+  if(!PM_LIST.some(x=>x.name==='TBD')) PM_LIST.unshift({name:'TBD',role:'pm',_dbid:null});
+  if(!SALES_LIST.some(x=>x.name==='TBD')) SALES_LIST.unshift({name:'TBD',role:'sales',_dbid:null});
+}
 function savePeopleLocal(){
   localStorage.setItem('spike_pms', JSON.stringify(PM_LIST));
   localStorage.setItem('spike_sales', JSON.stringify(SALES_LIST));
 }
 function populatePMSelect(selectedVal){
   const sel=document.getElementById('f-pm');
-  sel.innerHTML='<option value="">Select PM…</option>'+PM_LIST.map(n=>`<option value="${n}" ${n===selectedVal?'selected':''}>${n}</option>`).join('');
+  sel.innerHTML='<option value="">Select PM…</option>'+PM_LIST.map(p=>`<option value="${p.name}" ${p.name===selectedVal?'selected':''}>${p.name}</option>`).join('');
 }
 function populateSalesSelect(selectedVal){
   const sel=document.getElementById('f-sales');
-  sel.innerHTML='<option value="">Select Sales…</option>'+SALES_LIST.map(n=>`<option value="${n}" ${n===selectedVal?'selected':''}>${n}</option>`).join('');
+  sel.innerHTML='<option value="">Select Sales…</option>'+SALES_LIST.map(p=>`<option value="${p.name}" ${p.name===selectedVal?'selected':''}>${p.name}</option>`).join('');
 }
 function openPeopleModal(type){
   peopleModalType=type;
@@ -1061,9 +1073,13 @@ function closePeopleModal(){
 function renderPeopleList(){
   const list = peopleModalType==='pm' ? PM_LIST : SALES_LIST;
   document.getElementById('people-list').innerHTML = list.length
-    ? list.map((n,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;background:var(--s3);border:1px solid var(--b1);padding:7px 11px;">
-        <span style="font-size:12.5px;font-weight:500">${n}</span>
-        ${n!=='TBD'?`<button class="btn btn-gh btn-sm" style="padding:3px 8px;font-size:10px" onclick="removePerson(${i})">Remove</button>`:''}
+    ? list.map((p,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;background:var(--s3);border:1px solid var(--b1);padding:7px 11px;">
+        <div>
+          <span style="font-size:12.5px;font-weight:500">${p.name}</span>
+          ${sb&&p._dbid?'<span style="font-size:9px;color:var(--gr);margin-left:6px;font-family:var(--fm)">✓ synced</span>':''}
+          ${sb&&!p._dbid&&p.name!=='TBD'?'<span style="font-size:9px;color:var(--am);margin-left:6px;font-family:var(--fm)">local only</span>':''}
+        </div>
+        ${p.name!=='TBD'?`<button class="btn btn-gh btn-sm" style="padding:3px 8px;font-size:10px" onclick="removePerson(${i})">Remove</button>`:''}
       </div>`).join('')
     : '<div style="font-size:11px;color:var(--t3);padding:8px 0">No entries yet.</div>';
 }
@@ -1072,14 +1088,14 @@ async function addPerson(){
   const name=inp.value.trim();
   if(!name)return;
   const list=peopleModalType==='pm'?PM_LIST:SALES_LIST;
-  if(list.includes(name)){showToast('⚡ Name already exists');return;}
+  if(list.some(p=>p.name===name)){showToast('⚡ Name already exists');return;}
   if(sb){
-    const {error}=await sb.from('people').insert([{name,role:peopleModalType}]);
-    if(error){showToast('⚡ Save failed: '+error.message);return;}
-    // reload from DB so all teammates get the update
-    await loadFromDB();
+    const {data,error}=await sb.from('people').insert([{name,role:peopleModalType}]).select();
+    if(error){alert('Add failed:\n'+error.message+'\n\nMake sure RLS is disabled or policies allow insert on the people table.');return;}
+    const newRow={name,role:peopleModalType,_dbid:data[0].id};
+    list.push(newRow);
   } else {
-    list.push(name);
+    list.push({name,role:peopleModalType,_dbid:null});
     savePeopleLocal();
   }
   inp.value='';
@@ -1088,19 +1104,28 @@ async function addPerson(){
 }
 async function removePerson(idx){
   const list=peopleModalType==='pm'?PM_LIST:SALES_LIST;
-  const name=list[idx];
-  if(name==='TBD')return;
+  const person=list[idx];
+  if(!person||person.name==='TBD')return;
   if(sb){
-    const {error}=await sb.from('people').delete().eq('name',name).eq('role',peopleModalType);
-    if(error){showToast('⚡ Remove failed: '+error.message);return;}
-    await loadFromDB();
+    if(!person._dbid){
+      // Not in DB yet, just remove locally
+      list.splice(idx,1);
+      savePeopleLocal();
+      renderPeopleList();
+      return;
+    }
+    const {error}=await sb.from('people').delete().eq('id',person._dbid);
+    if(error){alert('Remove failed:\n'+error.message+'\n\nMake sure RLS is disabled or policies allow delete on the people table.');return;}
+    list.splice(idx,1);
   } else {
     list.splice(idx,1);
     savePeopleLocal();
   }
   renderPeopleList();
-  showToast('⚡ Removed '+name);
+  showToast('⚡ Removed '+person.name);
 }
+// Initialize local people on load
+loadPeopleLocal();
 
 // ── Modal ─────────────────────────────────────────────────────────────────
 let editingId=null;
@@ -1122,9 +1147,9 @@ function openModal(){
 function openEditModal(id){
   const p=PROJECTS.find(x=>x.id===id);if(!p)return;
   editingId=id;populateModalEngSelect();
-  // If the saved PM/Sales isn't in list yet, add it so it shows up
-  if(p.pm&&p.pm!=='TBD'&&!PM_LIST.includes(p.pm)){PM_LIST.push(p.pm);savePeopleData();}
-  if(p.sales&&p.sales!=='TBD'&&!SALES_LIST.includes(p.sales)){SALES_LIST.push(p.sales);savePeopleData();}
+  // If the saved PM/Sales name isn't in the list yet, add it locally so it shows up
+  if(p.pm&&p.pm!=='TBD'&&!PM_LIST.some(x=>x.name===p.pm)){PM_LIST.push({name:p.pm,role:'pm',_dbid:null});savePeopleLocal();}
+  if(p.sales&&p.sales!=='TBD'&&!SALES_LIST.some(x=>x.name===p.sales)){SALES_LIST.push({name:p.sales,role:'sales',_dbid:null});savePeopleLocal();}
   populatePMSelect(p.pm);
   populateSalesSelect(p.sales);
   document.getElementById('modal-title').textContent='Edit Project';
