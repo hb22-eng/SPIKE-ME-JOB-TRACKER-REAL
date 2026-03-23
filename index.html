@@ -615,14 +615,27 @@ async function initSupabaseAndLoad(){
 }
 async function loadFromDB(){
   showAppLoading(true);
-  const[projRes, xferRes, peopleRes, engRes]=await Promise.all([
-    sb.from('projects').select('*').order('created_at',{ascending:false}),
-    sb.from('project_transfers').select('*').order('transferred_at',{ascending:true}),
-    sb.from('people').select('*').order('name',{ascending:true}),
-    sb.from('engineers').select('*').order('created_at',{ascending:true})
-  ]);
+
+  // Fetch each table independently — a missing table won't crash the others
+  let projRes, xferRes, peopleRes, engRes;
+  try { projRes  = await sb.from('projects').select('*').order('created_at',{ascending:false}); }
+  catch(e){ projRes={error:e,data:null}; }
+  try { xferRes  = await sb.from('project_transfers').select('*').order('transferred_at',{ascending:true}); }
+  catch(e){ xferRes={error:e,data:null}; }
+  try { peopleRes = await sb.from('people').select('*').order('name',{ascending:true}); }
+  catch(e){ peopleRes={error:e,data:null}; }
+  try { engRes   = await sb.from('engineers').select('*').order('created_at',{ascending:true}); }
+  catch(e){ engRes={error:e,data:null}; }
+
   showAppLoading(false);
-  if(projRes.error){console.error(projRes.error);refreshAll();return;}
+
+  // Log any table errors to console so you can see what's missing
+  if(projRes.error)  console.warn('projects table:',  projRes.error.message||projRes.error);
+  if(xferRes.error)  console.warn('project_transfers:',xferRes.error.message||xferRes.error);
+  if(peopleRes.error)console.warn('people table:',    peopleRes.error.message||peopleRes.error);
+  if(engRes.error)   console.warn('engineers table:', engRes.error.message||engRes.error);
+
+  if(projRes.error){ refreshAll(); return; }
   PROJECTS=projRes.data.map(r=>({
     id:r.proj_id,name:r.name,desc:r.description||'',
     engineer:r.engineer,type:r.type,voltage:r.voltage,
@@ -633,7 +646,8 @@ async function loadFromDB(){
     ms:{design:r.ms_design||false,ifa:r.ms_ifa||false,ifc:r.ms_ifc||false,adj:r.ms_adj||false,idr:r.ms_idr||false,live:r.ms_live||false},
     _dbid:r.id
   }));
-  // Build transfer history map
+
+  // Transfer history
   TRANSFER_HISTORY={};
   if(!xferRes.error && xferRes.data){
     xferRes.data.forEach(r=>{
@@ -641,27 +655,27 @@ async function loadFromDB(){
       TRANSFER_HISTORY[r.proj_id].push({from:r.from_engineer,to:r.to_engineer,date:r.transferred_at});
     });
   }
-  // Load people from DB
+
+  // People (PM & Sales) — gracefully skipped if table missing
   if(!peopleRes.error && peopleRes.data){
-    const dbPMs = peopleRes.data.filter(r=>r.role==='pm').map(r=>({name:r.name,role:'pm',_dbid:r.id}));
-    const dbSales = peopleRes.data.filter(r=>r.role==='sales').map(r=>({name:r.name,role:'sales',_dbid:r.id}));
-    PM_LIST = [{name:'TBD',role:'pm',_dbid:null}, ...dbPMs];
-    SALES_LIST = [{name:'TBD',role:'sales',_dbid:null}, ...dbSales];
+    const dbPMs  = peopleRes.data.filter(r=>r.role==='pm').map(r=>({name:r.name,role:'pm',_dbid:r.id}));
+    const dbSales= peopleRes.data.filter(r=>r.role==='sales').map(r=>({name:r.name,role:'sales',_dbid:r.id}));
+    PM_LIST   = [{name:'TBD',role:'pm',_dbid:null},   ...dbPMs];
+    SALES_LIST= [{name:'TBD',role:'sales',_dbid:null}, ...dbSales];
   }
-  // Load engineers from DB — merge with builtins
+
+  // Engineers — gracefully skipped if table missing
   if(!engRes.error && engRes.data){
-    const dbEngs = engRes.data.map(r=>({
-      id:r.initials, name:r.name, color:r.color,
-      bg:hexToRgba(r.color,.15), role:r.role,
+    const dbEngs=engRes.data.map(r=>({
+      id:r.initials,name:r.name,color:r.color,
+      bg:hexToRgba(r.color,.15),role:r.role,
       ...(r.is_bnb?{isBnb:true}:{}),
-      _builtin:false, _dbid:r.id
+      _builtin:false,_dbid:r.id
     }));
-    // Keep builtins, add any DB engineers not already in list
-    ENGINEERS = [...BUILTIN_ENGINEERS];
-    dbEngs.forEach(e=>{
-      if(!ENGINEERS.some(x=>x.name===e.name)) ENGINEERS.push(e);
-    });
+    ENGINEERS=[...BUILTIN_ENGINEERS];
+    dbEngs.forEach(e=>{ if(!ENGINEERS.some(x=>x.name===e.name)) ENGINEERS.push(e); });
   }
+
   refreshAll();
 }
 function subscribeRealtime(){
@@ -1254,8 +1268,18 @@ async function saveEngineer(){
   if(ENGINEERS.some(e=>e.name===name)){alert('An engineer with that name already exists.');return;}
   if(ENGINEERS.some(e=>e.id===initials)){alert('Those initials are already taken — try different ones.');return;}
   if(sb){
-    const {data,error}=await sb.from('engineers').insert([{name,initials,color:selectedEngColor,role,is_bnb:isBnb}]).select();
-    if(error){alert('Save failed:\n'+error.message+'\n\nMake sure RLS is disabled or policies allow insert on the engineers table.');return;}
+    let data, error;
+    try{
+      const res = await sb.from('engineers').insert([{name,initials,color:selectedEngColor,role,is_bnb:isBnb}]).select();
+      data=res.data; error=res.error;
+    } catch(e){
+      alert('Save failed (network error):\n'+e.message+'\n\nCheck:\n1. Your Supabase URL and key are correct\n2. The engineers table exists\n3. RLS is disabled on the engineers table');
+      return;
+    }
+    if(error){
+      alert('Save failed:\n'+error.message+'\n\nMake sure the engineers table exists and RLS is disabled.');
+      return;
+    }
     const newEng={id:initials,name,color:selectedEngColor,bg:hexToRgba(selectedEngColor,.15),role,...(isBnb?{isBnb:true}:{}),_builtin:false,_dbid:data[0].id};
     ENGINEERS.push(newEng);
   } else {
