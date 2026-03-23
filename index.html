@@ -569,9 +569,10 @@ async function initSupabaseAndLoad(){
 }
 async function loadFromDB(){
   showAppLoading(true);
-  const[projRes, xferRes]=await Promise.all([
+  const[projRes, xferRes, peopleRes]=await Promise.all([
     sb.from('projects').select('*').order('created_at',{ascending:false}),
-    sb.from('project_transfers').select('*').order('transferred_at',{ascending:true})
+    sb.from('project_transfers').select('*').order('transferred_at',{ascending:true}),
+    sb.from('people').select('*').order('name',{ascending:true})
   ]);
   showAppLoading(false);
   if(projRes.error){console.error(projRes.error);refreshAll();return;}
@@ -593,11 +594,17 @@ async function loadFromDB(){
       TRANSFER_HISTORY[r.proj_id].push({from:r.from_engineer,to:r.to_engineer,date:r.transferred_at});
     });
   }
+  // Load people from DB
+  if(!peopleRes.error && peopleRes.data && peopleRes.data.length>0){
+    PM_LIST=['TBD',...peopleRes.data.filter(r=>r.role==='pm').map(r=>r.name)];
+    SALES_LIST=['TBD',...peopleRes.data.filter(r=>r.role==='sales').map(r=>r.name)];
+  }
   refreshAll();
 }
 function subscribeRealtime(){
-  realtimeCh=sb.channel('projects-changes')
+  realtimeCh=sb.channel('spike-changes')
     .on('postgres_changes',{event:'*',schema:'public',table:'projects'},()=>{loadFromDB();showToast('⚡ Updated by team member');})
+    .on('postgres_changes',{event:'*',schema:'public',table:'people'},()=>{loadFromDB();showToast('⚡ People list updated');})
     .subscribe();
 }
 function refreshAll(){
@@ -1027,7 +1034,7 @@ let PM_LIST = JSON.parse(localStorage.getItem('spike_pms') || '["TBD"]');
 let SALES_LIST = JSON.parse(localStorage.getItem('spike_sales') || '["TBD"]');
 let peopleModalType = 'pm';
 
-function savePeopleData(){
+function savePeopleLocal(){
   localStorage.setItem('spike_pms', JSON.stringify(PM_LIST));
   localStorage.setItem('spike_sales', JSON.stringify(SALES_LIST));
 }
@@ -1060,23 +1067,39 @@ function renderPeopleList(){
       </div>`).join('')
     : '<div style="font-size:11px;color:var(--t3);padding:8px 0">No entries yet.</div>';
 }
-function addPerson(){
+async function addPerson(){
   const inp=document.getElementById('people-new-input');
   const name=inp.value.trim();
   if(!name)return;
   const list=peopleModalType==='pm'?PM_LIST:SALES_LIST;
   if(list.includes(name)){showToast('⚡ Name already exists');return;}
-  list.push(name);
-  savePeopleData();
+  if(sb){
+    const {error}=await sb.from('people').insert([{name,role:peopleModalType}]);
+    if(error){showToast('⚡ Save failed: '+error.message);return;}
+    // reload from DB so all teammates get the update
+    await loadFromDB();
+  } else {
+    list.push(name);
+    savePeopleLocal();
+  }
   inp.value='';
   renderPeopleList();
   showToast('⚡ Added '+name);
 }
-function removePerson(idx){
+async function removePerson(idx){
   const list=peopleModalType==='pm'?PM_LIST:SALES_LIST;
-  list.splice(idx,1);
-  savePeopleData();
+  const name=list[idx];
+  if(name==='TBD')return;
+  if(sb){
+    const {error}=await sb.from('people').delete().eq('name',name).eq('role',peopleModalType);
+    if(error){showToast('⚡ Remove failed: '+error.message);return;}
+    await loadFromDB();
+  } else {
+    list.splice(idx,1);
+    savePeopleLocal();
+  }
   renderPeopleList();
+  showToast('⚡ Removed '+name);
 }
 
 // ── Modal ─────────────────────────────────────────────────────────────────
