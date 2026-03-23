@@ -93,7 +93,7 @@ td{padding:10px 12px;border-bottom:1px solid var(--b1);font-size:12px;vertical-a
 tr:last-child td{border-bottom:none}
 tr:hover td{background:rgba(255,255,255,.018)}
 .pname{font-weight:600;color:var(--t1)}
-.pid{font-family:var(--fm);font-size:9.5px;color:var(--t3);margin-top:1px}
+.pid{font-family:var(--fm);font-size:10px;color:var(--spike);font-weight:700;letter-spacing:.5px;background:var(--spike-dim);padding:2px 5px;display:inline-block;border:1px solid rgba(41,171,226,.2)}
 .ms-row{display:flex;align-items:center;gap:2px}
 .msd{width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;flex-shrink:0}
 .msd.done{background:rgba(34,212,122,.12);color:var(--gr);border:1px solid rgba(34,212,122,.25)}
@@ -325,7 +325,7 @@ tr:hover td{background:rgba(255,255,255,.018)}
     <div class="fbar">
       <div class="sbox"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="opacity:.4;flex-shrink:0"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="s-proj" placeholder="Search projects…" oninput="renderProjects()"></div>
       <select class="fsel" id="f-eng" onchange="renderProjects()"><option value="">All Engineers</option></select>
-      <select class="fsel" id="f-type" onchange="renderProjects()"><option value="">All Types</option><option>Switchrack</option><option>Switchgear</option><option>MCC</option><option>Transformer</option><option>Panel</option><option>Bus Duct</option><option>Load Center</option></select>
+      <select class="fsel" id="f-type" onchange="renderProjects()"><option value="">All Types</option><option>Switch</option><option>Switchboard</option><option>Switchrack</option><option>Switchgear</option><option>MCC</option><option>Transformer</option><option>Panel</option><option>Bus Duct</option><option>Load Center</option></select>
       <select class="fsel" id="f-volt" onchange="renderProjects()"><option value="">All Voltages</option><option>15kV</option><option>38kV</option><option>Medium Voltage</option><option>Low Voltage</option></select>
       <select class="fsel" id="f-stat" onchange="renderProjects()"><option value="">All Statuses</option><option>In Progress</option><option>Complete</option><option>On Hold</option></select>
       <select class="fsel" id="f-ms" onchange="renderProjects()"><option value="">All Milestones</option><option value="idr_pending">IDR Pending</option><option value="ifa_pending">IFA Pending</option><option value="ifa_done">IFA Done</option><option value="ifc_done">IFC Done</option><option value="live">Live on Floor</option></select>
@@ -337,7 +337,7 @@ tr:hover td{background:rgba(255,255,255,.018)}
   <div class="view" id="view-gantt">
     <div class="fbar">
       <select class="fsel" id="g-eng" onchange="renderGantt()"><option value="">All Engineers</option></select>
-      <select class="fsel" id="g-type" onchange="renderGantt()"><option value="">All Types</option><option>Switchrack</option><option>Switchgear</option><option>MCC</option><option>Transformer</option><option>Panel</option><option>Bus Duct</option><option>Load Center</option></select>
+      <select class="fsel" id="g-type" onchange="renderGantt()"><option value="">All Types</option><option>Switch</option><option>Switchboard</option><option>Switchrack</option><option>Switchgear</option><option>MCC</option><option>Transformer</option><option>Panel</option><option>Bus Duct</option><option>Load Center</option></select>
       <select class="fsel" id="g-stat" onchange="renderGantt()"><option value="">All Statuses</option><option>In Progress</option><option>Complete</option><option>On Hold</option></select>
     </div>
     <div class="gantt-wrap" id="gantt-container"></div>
@@ -349,7 +349,7 @@ tr:hover td{background:rgba(255,255,255,.018)}
       <div><div class="cal-title" id="cal-title">March 2025</div><div class="cal-subtitle" id="cal-subtitle">0 projects active</div></div>
       <div class="cal-controls">
         <select class="fsel" id="cal-eng" onchange="renderCalendar()"><option value="">All Engineers</option></select>
-        <select class="fsel" id="cal-type" onchange="renderCalendar()"><option value="">All Types</option><option>Switchrack</option><option>Switchgear</option><option>MCC</option><option>Transformer</option><option>Panel</option><option>Bus Duct</option><option>Load Center</option></select>
+        <select class="fsel" id="cal-type" onchange="renderCalendar()"><option value="">All Types</option><option>Switch</option><option>Switchboard</option><option>Switchrack</option><option>Switchgear</option><option>MCC</option><option>Transformer</option><option>Panel</option><option>Bus Duct</option><option>Load Center</option></select>
         <button class="btn btn-gh btn-sm" onclick="calStep(-1)">← Prev</button>
         <button class="btn btn-gh btn-sm" onclick="calToday()">Today</button>
         <button class="btn btn-gh btn-sm" onclick="calStep(1)">Next →</button>
@@ -411,10 +411,10 @@ tr:hover td{background:rgba(255,255,255,.018)}
     <div class="ff"><div class="flbl">Project ID</div><input class="finp" id="f-id" placeholder="e.g. P-2025-042"></div>
     <div class="ff"><div class="flbl">Project Name *</div><input class="finp" id="f-name" placeholder="e.g. Bay 3 Switchrack"></div>
     <div class="ff"><div class="flbl">Engineer *</div><select class="fsel2" id="f-engineer"><option value="">Select engineer…</option></select></div>
-    <div class="ff"><div class="flbl">Product Type *</div><select class="fsel2" id="f-type-m"><option value="">Select type…</option><option>Switchrack</option><option>Switchgear</option><option>MCC</option><option>Transformer</option><option>Panel</option><option>Bus Duct</option><option>Load Center</option></select></div>
+    <div class="ff"><div class="flbl">Product Type *</div><select class="fsel2" id="f-type-m"><option value="">Select type…</option><option>Switch</option><option>Switchboard</option><option>Switchrack</option><option>Switchgear</option><option>MCC</option><option>Transformer</option><option>Panel</option><option>Bus Duct</option><option>Load Center</option></select></div>
     <div class="ff"><div class="flbl">Voltage Level *</div><select class="fsel2" id="f-voltage"><option value="">Select voltage…</option><option>15kV</option><option>38kV</option><option>Medium Voltage</option><option>Low Voltage</option></select></div>
-    <div class="ff"><div class="flbl">Project Manager</div><input class="finp" id="f-pm" placeholder="PM full name"></div>
-    <div class="ff"><div class="flbl">Sales Rep</div><input class="finp" id="f-sales" placeholder="Sales rep name"></div>
+    <div class="ff"><div class="flbl" style="display:flex;justify-content:space-between;align-items:center">Project Manager <span onclick="openPeopleModal('pm')" style="color:var(--spike);cursor:pointer;font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase">+ Manage</span></div><select class="fsel2" id="f-pm"><option value="">Select PM…</option></select></div>
+    <div class="ff"><div class="flbl" style="display:flex;justify-content:space-between;align-items:center">Sales Rep <span onclick="openPeopleModal('sales')" style="color:var(--spike);cursor:pointer;font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase">+ Manage</span></div><select class="fsel2" id="f-sales"><option value="">Select Sales…</option></select></div>
     <div class="ff"><div class="flbl">Start Date</div><input class="finp" id="f-start" type="date"></div>
     <div class="ff"><div class="flbl">Target Live Date</div><input class="finp" id="f-end" type="date"></div>
     <div class="ff"><div class="flbl">IFA Due Date</div><input class="finp" id="f-ifa-due" type="date"></div>
@@ -443,6 +443,24 @@ tr:hover td{background:rgba(255,255,255,.018)}
 </div>
 </div>
 
+<!-- PEOPLE MODAL -->
+<div class="mbg" id="people-modal" onclick="if(event.target===this)closePeopleModal()">
+<div class="modal" style="width:520px">
+  <div class="modal-title" id="people-modal-title">Manage Project Managers</div>
+  <div style="margin-bottom:14px">
+    <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Current Team</div>
+    <div id="people-list" style="display:flex;flex-direction:column;gap:4px;margin-bottom:14px"></div>
+    <div style="display:flex;gap:8px;align-items:stretch">
+      <input class="finp" id="people-new-input" placeholder="Full name…" style="flex:1" onkeydown="if(event.key==='Enter')addPerson()">
+      <button class="btn btn-pr" onclick="addPerson()"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add</button>
+    </div>
+  </div>
+  <div class="modal-actions">
+    <button class="btn btn-gh" onclick="closePeopleModal()">Close</button>
+  </div>
+</div>
+</div>
+
 <!-- DAY POPUP -->
 <div class="day-popup" id="day-popup">
   <div class="day-popup-title"><span id="dp-title">—</span><span class="day-popup-close" onclick="closeDayPopup()">✕</span></div>
@@ -453,8 +471,8 @@ tr:hover td{background:rgba(255,255,255,.018)}
 <script>
 // ══ CONFIG — EDIT THESE ═══════════════════════════════════════════════════
 const TEAM_PASSWORD = 'SPIKE2025';        // 🔧 your team password
-const SUPABASE_URL  = 'https://zxgueylsdhgpukivmako.supabase.co';    // 🔧 from Supabase settings
-const SUPABASE_KEY  = 'sb_publishable_mJf70t8g_JfhRf_9t-lU7Q_jSU5DFmZ'; // 🔧 from Supabase settings
+const SUPABASE_URL  = 'YOUR_SUPABASE_URL';    // 🔧 from Supabase settings
+const SUPABASE_KEY  = 'YOUR_SUPABASE_ANON_KEY'; // 🔧 from Supabase settings
 // ══════════════════════════════════════════════════════════════════════════
 
 const SESSION_KEY = 'spike_auth';
@@ -648,7 +666,7 @@ function renderDashboard(){
   });
 
   const types={};PROJECTS.forEach(p=>{types[p.type]=(types[p.type]||0)+1});
-  const tCol={'Switchrack':'#29ABE2','Switchgear':'#14c4b2','MCC':'#f5a623','Transformer':'#a96df7','Panel':'#22d47a','Bus Duct':'#f97244','Load Center':'#e855a0'};
+  const tCol={'Switch':'#5b9bd5','Switchboard':'#29ABE2','Switchrack':'#0d8fc7','Switchgear':'#14c4b2','MCC':'#f5a623','Transformer':'#a96df7','Panel':'#22d47a','Bus Duct':'#f97244','Load Center':'#e855a0'};
   destroyChart('cTypes');
   charts.cTypes=new Chart(document.getElementById('cTypes'),{
     type:'doughnut',
@@ -739,7 +757,7 @@ function renderProjects(){
   tbody.innerHTML=list.map(p=>{
     const e=getEng(p.engineer);const pct=msPct(p.ms);
     return `<tr>
-      <td class="pid">${p.id}</td>
+      <td><span class="pid">${p.id}</span></td>
       <td class="pname">${p.name}</td>
       <td><div style="display:flex;align-items:center;gap:5px">${av(e,20)}<div><span style="font-size:11px">${p.engineer}</span>${(TRANSFER_HISTORY[p.id]||[]).length>0?`<div style="font-size:9px;color:var(--am);text-transform:uppercase;letter-spacing:.4px">↔ ${(TRANSFER_HISTORY[p.id]||[]).length}x transfer</div>`:''}</div></div></td>
       <td><span class="ttag">${p.type}</span></td>
@@ -1004,6 +1022,63 @@ function viewEngineer(name,el){
     </tr>`;}).join('')}</tbody></table></div>`;
 }
 
+// ── People (PM & Sales) ───────────────────────────────────────────────────
+let PM_LIST = JSON.parse(localStorage.getItem('spike_pms') || '["TBD"]');
+let SALES_LIST = JSON.parse(localStorage.getItem('spike_sales') || '["TBD"]');
+let peopleModalType = 'pm';
+
+function savePeopleData(){
+  localStorage.setItem('spike_pms', JSON.stringify(PM_LIST));
+  localStorage.setItem('spike_sales', JSON.stringify(SALES_LIST));
+}
+function populatePMSelect(selectedVal){
+  const sel=document.getElementById('f-pm');
+  sel.innerHTML='<option value="">Select PM…</option>'+PM_LIST.map(n=>`<option value="${n}" ${n===selectedVal?'selected':''}>${n}</option>`).join('');
+}
+function populateSalesSelect(selectedVal){
+  const sel=document.getElementById('f-sales');
+  sel.innerHTML='<option value="">Select Sales…</option>'+SALES_LIST.map(n=>`<option value="${n}" ${n===selectedVal?'selected':''}>${n}</option>`).join('');
+}
+function openPeopleModal(type){
+  peopleModalType=type;
+  document.getElementById('people-modal-title').textContent=type==='pm'?'Manage Project Managers':'Manage Sales Reps';
+  document.getElementById('people-new-input').value='';
+  renderPeopleList();
+  document.getElementById('people-modal').classList.add('open');
+}
+function closePeopleModal(){
+  document.getElementById('people-modal').classList.remove('open');
+  populatePMSelect(document.getElementById('f-pm').value);
+  populateSalesSelect(document.getElementById('f-sales').value);
+}
+function renderPeopleList(){
+  const list = peopleModalType==='pm' ? PM_LIST : SALES_LIST;
+  document.getElementById('people-list').innerHTML = list.length
+    ? list.map((n,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;background:var(--s3);border:1px solid var(--b1);padding:7px 11px;">
+        <span style="font-size:12.5px;font-weight:500">${n}</span>
+        ${n!=='TBD'?`<button class="btn btn-gh btn-sm" style="padding:3px 8px;font-size:10px" onclick="removePerson(${i})">Remove</button>`:''}
+      </div>`).join('')
+    : '<div style="font-size:11px;color:var(--t3);padding:8px 0">No entries yet.</div>';
+}
+function addPerson(){
+  const inp=document.getElementById('people-new-input');
+  const name=inp.value.trim();
+  if(!name)return;
+  const list=peopleModalType==='pm'?PM_LIST:SALES_LIST;
+  if(list.includes(name)){showToast('⚡ Name already exists');return;}
+  list.push(name);
+  savePeopleData();
+  inp.value='';
+  renderPeopleList();
+  showToast('⚡ Added '+name);
+}
+function removePerson(idx){
+  const list=peopleModalType==='pm'?PM_LIST:SALES_LIST;
+  list.splice(idx,1);
+  savePeopleData();
+  renderPeopleList();
+}
+
 // ── Modal ─────────────────────────────────────────────────────────────────
 let editingId=null;
 function populateModalEngSelect(){document.getElementById('f-engineer').innerHTML='<option value="">Select engineer…</option>'+ENGINEERS.map(e=>`<option value="${e.name}">${e.name}${e.isBnb?' (External)':''}</option>`).join('');}
@@ -1011,22 +1086,27 @@ function openModal(){
   editingId=null;
   document.getElementById('modal-title').textContent='Add New Project';
   document.getElementById('f-id').value='P-'+String(PROJECTS.length+1).padStart(3,'0');
-  ['f-name','f-desc','f-pm','f-sales','f-end','f-ifa-due','f-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['f-name','f-desc','f-end','f-ifa-due','f-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('f-engineer').value='';document.getElementById('f-type-m').value='';document.getElementById('f-voltage').value='';
   document.getElementById('f-start').value=new Date().toISOString().split('T')[0];
   document.querySelectorAll('.msc').forEach(m=>{m.classList.remove('on');m.querySelector('input').checked=false;m.querySelector('.msc-dot').textContent='';});
   document.getElementById('xfer-history-section').style.display='none';
   populateModalEngSelect();
+  populatePMSelect('');
+  populateSalesSelect('');
   document.getElementById('add-modal').classList.add('open');
 }
 function openEditModal(id){
   const p=PROJECTS.find(x=>x.id===id);if(!p)return;
   editingId=id;populateModalEngSelect();
+  // If the saved PM/Sales isn't in list yet, add it so it shows up
+  if(p.pm&&p.pm!=='TBD'&&!PM_LIST.includes(p.pm)){PM_LIST.push(p.pm);savePeopleData();}
+  if(p.sales&&p.sales!=='TBD'&&!SALES_LIST.includes(p.sales)){SALES_LIST.push(p.sales);savePeopleData();}
+  populatePMSelect(p.pm);
+  populateSalesSelect(p.sales);
   document.getElementById('modal-title').textContent='Edit Project';
   document.getElementById('f-id').value=p.id;
   document.getElementById('f-name').value=p.name;
-  document.getElementById('f-pm').value=p.pm;
-  document.getElementById('f-sales').value=p.sales;
   document.getElementById('f-engineer').value=p.engineer;
   document.getElementById('f-type-m').value=p.type;
   document.getElementById('f-voltage').value=p.voltage;
