@@ -203,6 +203,15 @@ tr:hover td{background:rgba(255,255,255,.018)}
 .xfer-name{font-size:12px;font-weight:600;color:var(--t1)}
 .xfer-date{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;margin-top:1px}
 .xfer-from{font-size:10px;color:var(--t2);margin-top:1px}
+.ms-prog-row{display:grid;grid-template-columns:28px 1fr 140px;align-items:center;padding:9px 12px;border-bottom:1px solid var(--b1);background:var(--s2);transition:background .1s}
+.ms-prog-row:last-child{border-bottom:none}
+.ms-prog-row.done-row{background:rgba(34,212,122,.05)}
+.ms-cb{width:15px;height:15px;accent-color:var(--spike);cursor:pointer;flex-shrink:0}
+.ms-prog-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--t3);transition:color .12s}
+.ms-prog-label.done{color:var(--gr)}
+.ms-date-inp{background:var(--s3);border:1px solid var(--b1);color:var(--t2);font-family:var(--fm);font-size:10.5px;padding:4px 8px;outline:none;width:100%;transition:border .12s}
+.ms-date-inp:focus{border-color:var(--spike);color:var(--t1)}
+.ms-date-inp::-webkit-calendar-picker-indicator{filter:invert(.35);cursor:pointer}
 .color-swatch{width:22px;height:22px;cursor:pointer;border:2px solid transparent;transition:transform .1s,border-color .1s}
 .color-swatch:hover{transform:scale(1.15)}
 .color-swatch.selected{border-color:#fff;transform:scale(1.15)}
@@ -428,7 +437,7 @@ tr:hover td{background:rgba(255,255,255,.018)}
   <div class="fg">
     <div class="ff"><div class="flbl">Project ID</div><input class="finp" id="f-id" placeholder="e.g. P-2025-042"></div>
     <div class="ff"><div class="flbl">Project Name *</div><input class="finp" id="f-name" placeholder="e.g. Bay 3 Switchrack"></div>
-    <div class="ff"><div class="flbl">Engineer *</div><select class="fsel2" id="f-engineer"><option value="">Select engineer…</option></select></div>
+    <div class="ff"><div class="flbl">Engineer *</div><select class="fsel2" id="f-engineer" onchange="updateHistoryLog()"><option value="">Select engineer…</option></select></div>
     <div class="ff"><div class="flbl">Product Type *</div><select class="fsel2" id="f-type-m"><option value="">Select type…</option><option>Switch</option><option>Switchboard</option><option>Switchrack</option><option>Switchgear</option><option>MCC</option><option>Transformer</option><option>Panel</option><option>Bus Duct</option><option>Load Center</option></select></div>
     <div class="ff"><div class="flbl">Voltage Level *</div><select class="fsel2" id="f-voltage"><option value="">Select voltage…</option><option>15kV</option><option>38kV</option><option>Medium Voltage</option><option>Low Voltage</option></select></div>
     <div class="ff"><div class="flbl" style="display:flex;justify-content:space-between;align-items:center">Project Manager <span onclick="openPeopleModal('pm')" style="color:var(--spike);cursor:pointer;font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase">+ Manage</span></div><select class="fsel2" id="f-pm"><option value="">Select PM…</option></select></div>
@@ -437,15 +446,85 @@ tr:hover td{background:rgba(255,255,255,.018)}
     <div class="ff"><div class="flbl">Target Live Date</div><input class="finp" id="f-end" type="date"></div>
     <div class="ff"><div class="flbl">IFA Due Date</div><input class="finp" id="f-ifa-due" type="date"></div>
     <div class="ff full"><div class="flbl">Notes</div><textarea class="ftxt" id="f-notes" placeholder="e.g. Waiting on customer drawings, on hold per client request…" style="min-height:52px"></textarea></div>
-    <div class="ff full"><div class="flbl" style="margin-bottom:6px">Milestones Completed</div>
-      <div class="ms-checks">
-        <label class="msc" id="mc-design"><span class="msc-dot"></span>Design<input type="checkbox"></label>
-        <label class="msc" id="mc-ifa"><span class="msc-dot"></span>IFA<input type="checkbox"></label>
-        <label class="msc" id="mc-ifc"><span class="msc-dot"></span>IFC<input type="checkbox"></label>
-        <label class="msc" id="mc-adj"><span class="msc-dot"></span>Adjustments<input type="checkbox"></label>
-        <label class="msc" id="mc-idr"><span class="msc-dot"></span>IDR<input type="checkbox"></label>
-        <label class="msc" id="mc-live"><span class="msc-dot"></span>Live on Floor<input type="checkbox"></label>
+  </div>
+
+  <!-- MILESTONE PROGRESSION — full width panel matching screenshot -->
+  <div style="margin-top:14px;border-top:1px solid var(--b1);padding-top:14px">
+    <div style="font-size:9px;font-weight:700;color:var(--spike);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;display:flex;align-items:center;gap:6px">
+      <span style="width:3px;height:12px;background:var(--spike);display:inline-block"></span>
+      Milestone Progression
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--b1)">
+
+      <!-- LEFT: milestone rows -->
+      <div style="border-right:1px solid var(--b1)">
+        <!-- header -->
+        <div style="display:grid;grid-template-columns:28px 1fr 130px;align-items:center;background:var(--s1);padding:6px 10px;border-bottom:1px solid var(--b1)">
+          <span></span>
+          <span style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px">Milestone</span>
+          <span style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px;text-align:right">Date Completed</span>
+        </div>
+        <!-- Design -->
+        <div class="ms-prog-row" id="mpr-design">
+          <input type="checkbox" class="ms-cb" id="mc-design" onchange="toggleMilestone('design',this)">
+          <span class="ms-prog-label" id="mpl-design">Design</span>
+          <input type="date" class="ms-date-inp" id="md-design" onchange="syncMilestoneCheck('design')">
+        </div>
+        <!-- IFA -->
+        <div class="ms-prog-row" id="mpr-ifa">
+          <input type="checkbox" class="ms-cb" id="mc-ifa" onchange="toggleMilestone('ifa',this)">
+          <span class="ms-prog-label" id="mpl-ifa">IFA</span>
+          <input type="date" class="ms-date-inp" id="md-ifa" onchange="syncMilestoneCheck('ifa')">
+        </div>
+        <!-- Customer Approval -->
+        <div class="ms-prog-row" id="mpr-adj">
+          <input type="checkbox" class="ms-cb" id="mc-adj" onchange="toggleMilestone('adj',this)">
+          <span class="ms-prog-label" id="mpl-adj">Customer Approval</span>
+          <input type="date" class="ms-date-inp" id="md-adj" onchange="syncMilestoneCheck('adj')">
+        </div>
+        <!-- IFC Started -->
+        <div class="ms-prog-row" id="mpr-ifc">
+          <input type="checkbox" class="ms-cb" id="mc-ifc" onchange="toggleMilestone('ifc',this)">
+          <span class="ms-prog-label" id="mpl-ifc">IFC Started</span>
+          <input type="date" class="ms-date-inp" id="md-ifc" onchange="syncMilestoneCheck('ifc')">
+        </div>
+        <!-- IDR Review -->
+        <div class="ms-prog-row" id="mpr-idr">
+          <input type="checkbox" class="ms-cb" id="mc-idr" onchange="toggleMilestone('idr',this)">
+          <span class="ms-prog-label" id="mpl-idr">IDR Review</span>
+          <input type="date" class="ms-date-inp" id="md-idr" onchange="syncMilestoneCheck('idr')">
+        </div>
+        <!-- Live on Floor -->
+        <div class="ms-prog-row" id="mpr-live">
+          <input type="checkbox" class="ms-cb" id="mc-live" onchange="toggleMilestone('live',this)">
+          <span class="ms-prog-label" id="mpl-live">Live on Floor</span>
+          <input type="date" class="ms-date-inp" id="md-live" onchange="syncMilestoneCheck('live')">
+        </div>
+        <!-- Project Shipped (ifc_shipped maps to ms.shipped) -->
+        <div class="ms-prog-row" id="mpr-shipped" style="border-bottom:none">
+          <input type="checkbox" class="ms-cb" id="mc-shipped" onchange="toggleMilestone('shipped',this)">
+          <span class="ms-prog-label" id="mpl-shipped" style="color:var(--gr)">Project Shipped</span>
+          <input type="date" class="ms-date-inp" id="md-shipped" onchange="syncMilestoneCheck('shipped')">
+        </div>
       </div>
+
+      <!-- RIGHT: history logs panel -->
+      <div style="display:flex;flex-direction:column">
+        <div style="background:var(--s1);padding:6px 10px;border-bottom:1px solid var(--b1)">
+          <span style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px">History Log</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;flex:1;border-bottom:1px solid var(--b1)">
+          <div style="border-right:1px solid var(--b1);padding:8px 10px">
+            <div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Ownership</div>
+            <div id="hist-ownership" style="font-size:11px;color:var(--t2);line-height:1.7">—</div>
+          </div>
+          <div style="padding:8px 10px">
+            <div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Milestones</div>
+            <div id="hist-milestones" style="font-size:11px;color:var(--t2);line-height:1.7">—</div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
   <div id="xfer-history-section" style="display:none" class="ff full">
@@ -516,8 +595,8 @@ tr:hover td{background:rgba(255,255,255,.018)}
 <script>
 // ══ CONFIG — EDIT THESE ═══════════════════════════════════════════════════
 const TEAM_PASSWORD = 'SPIKE2025';        // 🔧 your team password
-const SUPABASE_URL  = 'https://zxgueylsdhgpukivmako.supabase.co';    // 🔧 from Supabase settings
-const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4Z3VleWxzZGhncHVraXZtYWtvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5MzU3MTQsImV4cCI6MjA4OTUxMTcxNH0.dnFA7MkE5nJ-hvl9k0EeJY3J-ExUadhgs3_F2ksO3Jk'; // 🔧 from Supabase settings
+const SUPABASE_URL  = 'YOUR_SUPABASE_URL';    // 🔧 from Supabase settings
+const SUPABASE_KEY  = 'YOUR_SUPABASE_ANON_KEY'; // 🔧 from Supabase settings
 // ══════════════════════════════════════════════════════════════════════════
 
 const SESSION_KEY = 'spike_auth';
@@ -643,7 +722,8 @@ async function loadFromDB(){
     start:r.start_date,end:r.end_date,
     ifaDue:r.ifa_due_date||null,
     notes:r.notes||'',
-    ms:{design:r.ms_design||false,ifa:r.ms_ifa||false,ifc:r.ms_ifc||false,adj:r.ms_adj||false,idr:r.ms_idr||false,live:r.ms_live||false},
+    ms:{design:r.ms_design||false,ifa:r.ms_ifa||false,ifc:r.ms_ifc||false,adj:r.ms_adj||false,idr:r.ms_idr||false,live:r.ms_live||false,shipped:r.ms_shipped||false},
+    msDates:{design:r.ms_design_date||'',ifa:r.ms_ifa_date||'',ifc:r.ms_ifc_date||'',adj:r.ms_adj_date||'',idr:r.ms_idr_date||'',live:r.ms_live_date||'',shipped:r.ms_shipped_date||''},
     _dbid:r.id
   }));
 
@@ -1317,6 +1397,7 @@ function openModal(){
   document.getElementById('f-engineer').value='';document.getElementById('f-type-m').value='';document.getElementById('f-voltage').value='';
   document.getElementById('f-start').value=new Date().toISOString().split('T')[0];
   document.querySelectorAll('.msc').forEach(m=>{m.classList.remove('on');m.querySelector('input').checked=false;m.querySelector('.msc-dot').textContent='';});
+  resetMilestones();
   document.getElementById('xfer-history-section').style.display='none';
   populateModalEngSelect();
   populatePMSelect('');
@@ -1342,7 +1423,8 @@ function openEditModal(id){
   document.getElementById('f-ifa-due').value=p.ifaDue||'';
   document.getElementById('f-notes').value=p.notes||'';
   const msc={design:'mc-design',ifa:'mc-ifa',ifc:'mc-ifc',adj:'mc-adj',idr:'mc-idr',live:'mc-live'};
-  Object.entries(msc).forEach(([k,elid])=>{const el=document.getElementById(elid);const inp=el.querySelector('input');const dot=el.querySelector('.msc-dot');inp.checked=p.ms[k];el.classList.toggle('on',p.ms[k]);dot.textContent=p.ms[k]?'✓':'';});
+  Object.entries(msc).forEach(([k,elid])=>{const el=document.getElementById(elid);const inp=el;inp.checked=p.ms[k];});
+  loadMilestones(p.ms, p.msDates||{});
   // Render transfer history
   renderTransferHistory(p.id);
   document.getElementById('add-modal').classList.add('open');
@@ -1382,7 +1464,95 @@ function renderTransferHistory(projId){
     </div>`;
   }).join('');
 }
-document.querySelectorAll('.msc').forEach(label=>{label.addEventListener('click',()=>{const inp=label.querySelector('input');inp.checked=!inp.checked;label.classList.toggle('on',inp.checked);label.querySelector('.msc-dot').textContent=inp.checked?'✓':'';});});
+// ── Milestone Progression ─────────────────────────────────────────────────
+const MS_KEYS=['design','ifa','adj','ifc','idr','live','shipped'];
+function toggleMilestone(key, cb){
+  const today=new Date().toISOString().split('T')[0];
+  const dateInp=document.getElementById('md-'+key);
+  const label=document.getElementById('mpl-'+key);
+  const row=document.getElementById('mpr-'+key);
+  if(cb.checked){
+    if(!dateInp.value) dateInp.value=today;
+    label.classList.add('done');
+    row.classList.add('done-row');
+  } else {
+    dateInp.value='';
+    label.classList.remove('done');
+    row.classList.remove('done-row');
+  }
+  updateHistoryLog();
+}
+function syncMilestoneCheck(key){
+  const dateInp=document.getElementById('md-'+key);
+  const cb=document.getElementById('mc-'+key);
+  const label=document.getElementById('mpl-'+key);
+  const row=document.getElementById('mpr-'+key);
+  const hasDate=!!dateInp.value;
+  cb.checked=hasDate;
+  label.classList.toggle('done',hasDate);
+  row.classList.toggle('done-row',hasDate);
+  updateHistoryLog();
+}
+function resetMilestones(){
+  MS_KEYS.forEach(k=>{
+    const cb=document.getElementById('mc-'+k);
+    const di=document.getElementById('md-'+k);
+    const lb=document.getElementById('mpl-'+k);
+    const rw=document.getElementById('mpr-'+k);
+    if(cb) cb.checked=false;
+    if(di) di.value='';
+    if(lb) lb.classList.remove('done');
+    if(rw) rw.classList.remove('done-row');
+  });
+  updateHistoryLog();
+}
+function loadMilestones(ms, msDates){
+  MS_KEYS.forEach(k=>{
+    const cb=document.getElementById('mc-'+k);
+    const di=document.getElementById('md-'+k);
+    const lb=document.getElementById('mpl-'+k);
+    const rw=document.getElementById('mpr-'+k);
+    const checked=ms[k]||false;
+    const date=(msDates&&msDates[k])||'';
+    if(cb) cb.checked=checked;
+    if(di) di.value=date;
+    if(lb) lb.classList.toggle('done',checked);
+    if(rw) rw.classList.toggle('done-row',checked);
+  });
+  updateHistoryLog();
+}
+function getMilestones(){
+  const ms={}, msDates={};
+  MS_KEYS.forEach(k=>{
+    const cb=document.getElementById('mc-'+k);
+    const di=document.getElementById('md-'+k);
+    ms[k]=cb?cb.checked:false;
+    msDates[k]=di?di.value||null:null;
+  });
+  return {ms,msDates};
+}
+const MS_LABELS={design:'Design',ifa:'IFA',adj:'Customer Approval',ifc:'IFC Started',idr:'IDR Review',live:'Live on Floor',shipped:'Project Shipped'};
+function updateHistoryLog(){
+  const ownerEl=document.getElementById('hist-ownership');
+  const msEl=document.getElementById('hist-milestones');
+  if(!ownerEl||!msEl) return;
+  // Ownership: current engineer
+  const eng=document.getElementById('f-engineer')?.value||'—';
+  ownerEl.innerHTML=eng!=='—'?`<span style="color:var(--t1);font-weight:600">${eng}</span>`:'<span style="color:var(--t3)">—</span>';
+  // Milestones: list completed ones with dates
+  const done=MS_KEYS.filter(k=>document.getElementById('mc-'+k)?.checked);
+  if(!done.length){msEl.innerHTML='<span style="color:var(--t3)">None completed yet</span>';return;}
+  msEl.innerHTML=done.map(k=>{
+    const date=document.getElementById('md-'+k)?.value;
+    const dateStr=date?new Date(date+'T00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'';
+    return `<div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:3px">
+      <span style="color:var(--gr);font-weight:600">✓ ${MS_LABELS[k]}</span>
+      <span style="color:var(--t3);font-family:var(--fm);font-size:10px">${dateStr}</span>
+    </div>`;
+  }).join('');
+}
+
+
 
 async function saveProject(){
   const name=document.getElementById('f-name').value.trim();
@@ -1390,10 +1560,10 @@ async function saveProject(){
   const type=document.getElementById('f-type-m').value;
   const voltage=document.getElementById('f-voltage').value;
   if(!name||!engineer||!type||!voltage){alert('Please fill in Name, Engineer, Type and Voltage');return;}
-  const ms={design:document.getElementById('mc-design').querySelector('input').checked,ifa:document.getElementById('mc-ifa').querySelector('input').checked,ifc:document.getElementById('mc-ifc').querySelector('input').checked,adj:document.getElementById('mc-adj').querySelector('input').checked,idr:document.getElementById('mc-idr').querySelector('input').checked,live:document.getElementById('mc-live').querySelector('input').checked};
-  const proj={id:document.getElementById('f-id').value||'P-'+Date.now(),name,desc:'',engineer,type,voltage,pm:document.getElementById('f-pm').value||'TBD',sales:document.getElementById('f-sales').value||'TBD',status:ms.live?'Complete':'In Progress',start:document.getElementById('f-start').value||null,end:document.getElementById('f-end').value||null,ifaDue:document.getElementById('f-ifa-due').value||null,notes:document.getElementById('f-notes').value||'',ms};
+  const {ms, msDates}=getMilestones();
+  const proj={id:document.getElementById('f-id').value||'P-'+Date.now(),name,desc:'',engineer,type,voltage,pm:document.getElementById('f-pm').value||'TBD',sales:document.getElementById('f-sales').value||'TBD',status:ms.live?'Complete':'In Progress',start:document.getElementById('f-start').value||null,end:document.getElementById('f-end').value||null,ifaDue:document.getElementById('f-ifa-due').value||null,notes:document.getElementById('f-notes').value||'',ms,msDates};
   if(sb){
-    const dbRow={proj_id:proj.id,name:proj.name,description:'',engineer:proj.engineer,type:proj.type,voltage:proj.voltage,pm:proj.pm,sales:proj.sales,status:proj.status,start_date:proj.start||null,end_date:proj.end||null,ifa_due_date:proj.ifaDue||null,notes:proj.notes||'',ms_design:proj.ms.design,ms_ifa:proj.ms.ifa,ms_ifc:proj.ms.ifc,ms_adj:proj.ms.adj,ms_idr:proj.ms.idr,ms_live:proj.ms.live};
+    const dbRow={proj_id:proj.id,name:proj.name,description:'',engineer:proj.engineer,type:proj.type,voltage:proj.voltage,pm:proj.pm,sales:proj.sales,status:proj.status,start_date:proj.start||null,end_date:proj.end||null,ifa_due_date:proj.ifaDue||null,notes:proj.notes||'',ms_design:proj.ms.design,ms_ifa:proj.ms.ifa,ms_ifc:proj.ms.ifc,ms_adj:proj.ms.adj,ms_idr:proj.ms.idr,ms_live:proj.ms.live,ms_shipped:proj.ms.shipped||false,ms_design_date:msDates.design||null,ms_ifa_date:msDates.ifa||null,ms_ifc_date:msDates.ifc||null,ms_adj_date:msDates.adj||null,ms_idr_date:msDates.idr||null,ms_live_date:msDates.live||null,ms_shipped_date:msDates.shipped||null};
     let error;
     if(editingId){
       const existing=PROJECTS.find(p=>p.id===editingId);
