@@ -438,7 +438,7 @@ tr:hover td{background:rgba(255,255,255,.018)}
     <div class="ff"><div class="flbl">Project ID</div><input class="finp" id="f-id" placeholder="e.g. P-2025-042"></div>
     <div class="ff"><div class="flbl">Project Name *</div><input class="finp" id="f-name" placeholder="e.g. Bay 3 Switchrack"></div>
     <div class="ff"><div class="flbl">Engineer *</div><select class="fsel2" id="f-engineer" onchange="updateHistoryLog()"><option value="">Select engineer…</option></select></div>
-    <div class="ff"><div class="flbl">Product Type *</div><select class="fsel2" id="f-type-m"><option value="">Select type…</option><option>Switch</option><option>Switchboard</option><option>Switchrack</option><option>Switchgear</option><option>MCC</option><option>Transformer</option><option>Panel</option><option>Bus Duct</option><option>Load Center</option></select></div>
+    <div class="ff"><div class="flbl" style="display:flex;justify-content:space-between;align-items:center">Product Type * <span onclick="openTypeModal()" style="color:var(--spike);cursor:pointer;font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase">+ Manage</span></div><select class="fsel2" id="f-type-m"><option value="">Select type…</option></select></div>
     <div class="ff"><div class="flbl">Voltage Level *</div><select class="fsel2" id="f-voltage"><option value="">Select voltage…</option><option>15kV</option><option>38kV</option><option>Medium Voltage</option><option>Low Voltage</option></select></div>
     <div class="ff"><div class="flbl" style="display:flex;justify-content:space-between;align-items:center">Project Manager <span onclick="openPeopleModal('pm')" style="color:var(--spike);cursor:pointer;font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase">+ Manage</span></div><select class="fsel2" id="f-pm"><option value="">Select PM…</option></select></div>
     <div class="ff"><div class="flbl" style="display:flex;justify-content:space-between;align-items:center">Sales Rep <span onclick="openPeopleModal('sales')" style="color:var(--spike);cursor:pointer;font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase">+ Manage</span></div><select class="fsel2" id="f-sales"><option value="">Select Sales…</option></select></div>
@@ -585,6 +585,24 @@ tr:hover td{background:rgba(255,255,255,.018)}
 </div>
 </div>
 
+<!-- PRODUCT TYPE MODAL -->
+<div class="mbg" id="type-modal" onclick="if(event.target===this)closeTypeModal()">
+<div class="modal" style="width:520px">
+  <div class="modal-title">Manage Product Types</div>
+  <div style="margin-bottom:14px">
+    <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Current Types</div>
+    <div id="type-list" style="display:flex;flex-direction:column;gap:4px;margin-bottom:14px"></div>
+    <div style="display:flex;gap:8px;align-items:stretch">
+      <input class="finp" id="type-new-input" placeholder="e.g. Cable Tap Box…" style="flex:1" onkeydown="if(event.key==='Enter')addProductType()">
+      <button class="btn btn-pr" onclick="addProductType()"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add</button>
+    </div>
+  </div>
+  <div class="modal-actions">
+    <button class="btn btn-gh" onclick="closeTypeModal()">Close</button>
+  </div>
+</div>
+</div>
+
 <!-- DAY POPUP -->
 <div class="day-popup" id="day-popup">
   <div class="day-popup-title"><span id="dp-title">—</span><span class="day-popup-close" onclick="closeDayPopup()">✕</span></div>
@@ -595,8 +613,8 @@ tr:hover td{background:rgba(255,255,255,.018)}
 <script>
 // ══ CONFIG — EDIT THESE ═══════════════════════════════════════════════════
 const TEAM_PASSWORD = 'SPIKE2025';        // 🔧 your team password
-const SUPABASE_URL  = 'https://zxgueylsdhgpukivmako.supabase.co';    // 🔧 from Supabase settings
-const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4Z3VleWxzZGhncHVraXZtYWtvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5MzU3MTQsImV4cCI6MjA4OTUxMTcxNH0.dnFA7MkE5nJ-hvl9k0EeJY3J-ExUadhgs3_F2ksO3Jk'; // 🔧 from Supabase settings
+const SUPABASE_URL  = 'YOUR_SUPABASE_URL';    // 🔧 from Supabase settings
+const SUPABASE_KEY  = 'YOUR_SUPABASE_ANON_KEY'; // 🔧 from Supabase settings
 // ══════════════════════════════════════════════════════════════════════════
 
 const SESSION_KEY = 'spike_auth';
@@ -705,6 +723,9 @@ async function loadFromDB(){
   catch(e){ peopleRes={error:e,data:null}; }
   try { engRes   = await sb.from('engineers').select('*').order('created_at',{ascending:true}); }
   catch(e){ engRes={error:e,data:null}; }
+  let typeRes;
+  try { typeRes  = await sb.from('product_types').select('*').order('name',{ascending:true}); }
+  catch(e){ typeRes={error:e,data:null}; }
 
   showAppLoading(false);
 
@@ -713,6 +734,7 @@ async function loadFromDB(){
   if(xferRes.error)  console.warn('project_transfers:',xferRes.error.message||xferRes.error);
   if(peopleRes.error)console.warn('people table:',    peopleRes.error.message||peopleRes.error);
   if(engRes.error)   console.warn('engineers table:', engRes.error.message||engRes.error);
+  if(typeRes.error)  console.warn('product_types table:', typeRes.error.message||typeRes.error);
 
   if(projRes.error){ refreshAll(); return; }
   PROJECTS=projRes.data.map(r=>({
@@ -756,6 +778,14 @@ async function loadFromDB(){
     dbEngs.forEach(e=>{ if(!ENGINEERS.some(x=>x.name===e.name)) ENGINEERS.push(e); });
   }
 
+  // Product types from DB
+  if(!typeRes.error && typeRes.data && typeRes.data.length>0){
+    const dbTypes=typeRes.data.map(r=>({name:r.name,_dbid:r.id}));
+    // Merge: keep defaults, add DB types not already present
+    PRODUCT_TYPES=[...DEFAULT_TYPES.map(n=>({name:n,_dbid:null}))];
+    dbTypes.forEach(t=>{if(!PRODUCT_TYPES.some(x=>x.name===t.name))PRODUCT_TYPES.push(t);});
+  }
+
   refreshAll();
 }
 function subscribeRealtime(){
@@ -763,6 +793,7 @@ function subscribeRealtime(){
     .on('postgres_changes',{event:'*',schema:'public',table:'projects'},()=>{loadFromDB();showToast('⚡ Updated by team member');})
     .on('postgres_changes',{event:'*',schema:'public',table:'people'},()=>{loadFromDB();showToast('⚡ People list updated');})
     .on('postgres_changes',{event:'*',schema:'public',table:'engineers'},()=>{loadFromDB();showToast('⚡ Team roster updated');})
+    .on('postgres_changes',{event:'*',schema:'public',table:'product_types'},()=>{loadFromDB();showToast('⚡ Product types updated');})
     .subscribe();
 }
 function refreshAll(){
@@ -770,6 +801,7 @@ function refreshAll(){
   populateCalFilters();
   populateGanttFilters();
   populateFilters();
+  populateTypeFilters();
   document.getElementById('last-update').textContent=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
   // Re-render whichever view is currently active
   const active=document.querySelector('.view.active');
@@ -1284,7 +1316,88 @@ async function removePerson(idx){
 // Initialize local people on load
 loadPeopleLocal();
 
-// ── Engineer Management ───────────────────────────────────────────────────
+// ── Product Types ─────────────────────────────────────────────────────────
+const DEFAULT_TYPES=['Switch','Switchboard','Switchrack','Switchgear','MCC','Transformer','Panel','Bus Duct','Load Center'];
+// Each entry: {name, _dbid}
+let PRODUCT_TYPES=DEFAULT_TYPES.map(n=>({name:n,_dbid:null}));
+
+function loadTypesLocal(){
+  const saved=JSON.parse(localStorage.getItem('spike_types')||'[]');
+  if(saved.length){
+    PRODUCT_TYPES=saved.map(x=>typeof x==='string'?{name:x,_dbid:null}:x);
+    // make sure defaults are always present
+    DEFAULT_TYPES.forEach(n=>{if(!PRODUCT_TYPES.some(t=>t.name===n))PRODUCT_TYPES.unshift({name:n,_dbid:null});});
+  }
+}
+function saveTypesLocal(){
+  localStorage.setItem('spike_types',JSON.stringify(PRODUCT_TYPES));
+}
+function populateTypeSelect(selectedVal){
+  const sel=document.getElementById('f-type-m');
+  if(!sel)return;
+  sel.innerHTML='<option value="">Select type…</option>'+PRODUCT_TYPES.map(t=>`<option value="${t.name}"${t.name===selectedVal?' selected':''}>${t.name}</option>`).join('');
+}
+// Also populate the filter dropdowns (All Projects, Gantt, Calendar)
+function populateTypeFilters(){
+  const opts='<option value="">All Types</option>'+PRODUCT_TYPES.map(t=>`<option value="${t.name}">${t.name}</option>`).join('');
+  ['f-type','g-type','cal-type'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=opts;});
+}
+function openTypeModal(){
+  document.getElementById('type-new-input').value='';
+  renderTypeList();
+  document.getElementById('type-modal').classList.add('open');
+}
+function closeTypeModal(){
+  document.getElementById('type-modal').classList.remove('open');
+  populateTypeSelect(document.getElementById('f-type-m').value);
+  populateTypeFilters();
+}
+function renderTypeList(){
+  document.getElementById('type-list').innerHTML=PRODUCT_TYPES.length
+    ? PRODUCT_TYPES.map((t,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;background:var(--s3);border:1px solid var(--b1);padding:7px 11px;">
+        <div>
+          <span style="font-size:12.5px;font-weight:500">${t.name}</span>
+          ${DEFAULT_TYPES.includes(t.name)?'<span style="font-size:9px;color:var(--t3);margin-left:6px;text-transform:uppercase;letter-spacing:.5px">default</span>':''}
+          ${sb&&t._dbid?'<span style="font-size:9px;color:var(--gr);margin-left:6px;font-family:var(--fm)">✓ synced</span>':''}
+        </div>
+        ${!DEFAULT_TYPES.includes(t.name)?`<button class="btn btn-gh btn-sm" style="padding:3px 8px;font-size:10px;color:var(--rd);border-color:rgba(245,83,83,.3)" onclick="removeProductType(${i})">Remove</button>`:''}
+      </div>`).join('')
+    : '<div style="font-size:11px;color:var(--t3);padding:8px 0">No types yet.</div>';
+}
+async function addProductType(){
+  const inp=document.getElementById('type-new-input');
+  const name=inp.value.trim();
+  if(!name)return;
+  if(PRODUCT_TYPES.some(t=>t.name===name)){showToast('⚡ Type already exists');return;}
+  if(sb){
+    let data,error;
+    try{const res=await sb.from('product_types').insert([{name}]).select();data=res.data;error=res.error;}
+    catch(e){alert('Add failed:\n'+e.message);return;}
+    if(error){alert('Add failed:\n'+error.message+'\n\nMake sure the product_types table exists and RLS is disabled.');return;}
+    PRODUCT_TYPES.push({name,_dbid:data[0].id});
+  } else {
+    PRODUCT_TYPES.push({name,_dbid:null});
+    saveTypesLocal();
+  }
+  inp.value='';
+  renderTypeList();
+  showToast('⚡ Added '+name);
+}
+async function removeProductType(idx){
+  const t=PRODUCT_TYPES[idx];
+  if(!t||DEFAULT_TYPES.includes(t.name))return;
+  if(sb&&t._dbid){
+    const{error}=await sb.from('product_types').delete().eq('id',t._dbid);
+    if(error){alert('Remove failed:\n'+error.message);return;}
+  }
+  PRODUCT_TYPES.splice(idx,1);
+  if(!sb)saveTypesLocal();
+  renderTypeList();
+  showToast('⚡ Removed '+t.name);
+}
+loadTypesLocal();
+
+
 const ENGINEER_COLORS=[
   // Blues
   '#29ABE2','#38bdf8','#0ea5e9','#1d4ed8','#6366f1',
@@ -1402,6 +1515,7 @@ function openModal(){
   populateModalEngSelect();
   populatePMSelect('');
   populateSalesSelect('');
+  populateTypeSelect('');
   document.getElementById('add-modal').classList.add('open');
 }
 function openEditModal(id){
@@ -1412,6 +1526,7 @@ function openEditModal(id){
   if(p.sales&&p.sales!=='TBD'&&!SALES_LIST.some(x=>x.name===p.sales)){SALES_LIST.push({name:p.sales,role:'sales',_dbid:null});savePeopleLocal();}
   populatePMSelect(p.pm);
   populateSalesSelect(p.sales);
+  populateTypeSelect(p.type);
   document.getElementById('modal-title').textContent='Edit Project';
   document.getElementById('f-id').value=p.id;
   document.getElementById('f-name').value=p.name;
